@@ -1,0 +1,201 @@
+---
+title: "Project 1 - Analysis of Global GDP and Population Data"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Carson Manley
+### cwm2477
+
+# Introduction
+
+*The three datasets selected for this project were pulled from World Bank Open Data, a source for financial and demographic records spanning the entire globe. I chose to examine worldwide data for population, percent GDP growth and per-capita GDP. Observations range from 1961-2018, although data was not collected until relatively recently for some countries. If population has some bearing on the size of a country's economy, there may be an inverse relationship between population and percent GDP growth. Smaller economies may grow faster than larger ones if they are far below their maximum potential. Per capita GDP will show an increase with increasing year, but year is almost pseudo-catergorical in this context. Otherwise, it seems unlikely that the other numeric variables in the joined dataset will share significant relationships over long timescales*
+
+*Joining these datasets allows for direct comparison between important indicators for national health. I believe that many of us know less about the relative size and power of the world's countries than we would like to, and these comparisons will aid in enhancing that base of knowledge*
+
+# Joining
+
+*A full join was selected for these data because each indicator has certain years during which it was measured for a particular country. As such, some values could be lost if that year range was not consistent across all three indicators. A full join inherenetly preserves all observations, so no rows were dropped during the joining process. The join itself was quite simple - percent GDP growth and population were read in as "GDP" and "POP" and then full joined to one another - the resulting data frame was then full joined to GDP per capita.*
+
+```{R}
+library(tidyverse)
+library(readr)
+GDP <- read_csv("GDP.csv")
+POP <- read_csv("POP.csv")
+GDP_per_capita <- read_csv("GDP_per_capita.csv")
+firsttwo <- GDP %>% full_join(POP)
+gdppop <- firsttwo %>% full_join(GDP_per_capita) %>% glimpse
+```
+
+*Subsequently, tidying was needed to sort out the jumbled output of the full join. Each year had its own column in the initial output, so these years were pivoted longer to "year", while the values for each indicator were pivoted to "value". The "Indicator Code" column was redundant and had to be removed in order to facilitate pivoting wider - this was performed using select. Finally, each indicator was pivoted to its own column using pivot wider, and NA values were dropped with drop_na. The dataset was cut down from 15576 to 9301 rows, representing a drop of 6275 cases; this means that any row not containing an observation for all three indicators was removed.*
+
+```{R}
+tidy1 <- gdppop %>% pivot_longer(5:63, names_to="year", values_to="value") %>% 
+  select(!`Indicator Code`) %>%
+  pivot_wider(names_from = "Indicator Name", values_from = "value") %>%
+  drop_na()
+glimpse(tidy1) 
+```
+
+# Summary Statistics
+
+*For the initial use of dplyr functions, I was hoping to get a more accurate picture of the dataset before diving into summary statistics. I began by grouping the data by country and finding the mean for each variable, representing the overall average across all years for a particular country. Next, I compared the number of observations smaller than the mean and median of the population variable. A larger number of observations fall below the mean than below the median, which indicates a right skew of the data. Finally, I defined a z-score function and computed a z-score for each of the country means from the first summary table.*
+
+```{R}
+tidy2 <- tidy1 %>% group_by(`Country Name`) %>% summarize_at(c("GDP growth (annual %)", "Population, total", "GDP per capita (constant LCU)"), mean, na.rm=T)
+glimpse(tidy2)
+```
+
+```{R}
+tidy3 <- tidy1 %>% filter(`Population, total`< mean(`Population, total`, na.rm=T))
+tidy4 <- tidy1 %>% filter(`Population, total`< median(`Population, total`, na.rm=T))
+nrow(tidy3)
+nrow(tidy4)
+```
+
+```{R}
+zscore = function(x, na.rm=T){(x-mean(x, na.rm=T))/sd(x, na.rm=T)}
+tidy5 <- tidy2 %>% mutate("zGDP_growth" = zscore(`GDP growth (annual %)`), "zPop" = zscore(`Population, total`), "zGDP" = zscore(`GDP per capita (constant LCU)`)) %>% 
+  rename("Mean_GDP_growth" = `GDP growth (annual %)`, "Mean_Pop" = `Population, total`)
+glimpse(tidy5)
+```
+
+*I also grouped the summary statistics by country and computed the mean, median, standard deviation, variance, minimum and maximum value for each of the three numeric variables.* 
+
+```{R}
+tidy6 <- tidy1 %>% rename("GDP growth" = `GDP growth (annual %)`, "Pop" = `Population, total`, "GDP per capita" = `GDP per capita (constant LCU)`) %>%
+  group_by(`Country Name`) %>%
+  mutate("Mean_growth" = mean(`GDP growth`), "Median_growth" = median(`GDP growth`), "SD_growth" = sd(`GDP growth`), 
+         "Var_growth" = var(`GDP growth`), "Min_growth" = min(`GDP growth`), "Max_growth" = max(`GDP growth`)) %>%
+  mutate("Mean_GDP" = mean(`GDP per capita`), "Median_GDP" = median(`GDP per capita`), "SD_GDP" = sd(`GDP per capita`), 
+         "Var_GDP" = var(`GDP per capita`), "Min_GDP" = min(`GDP per capita`), "Max_GDP" = max(`GDP per capita`)) %>%
+  mutate("Mean_Population" = mean(Pop), "Median_Population" = median(Pop), "SD_Population" = sd(Pop), 
+         "Var_Population" = var(Pop), "Min_Population" = min(Pop), "Max_Population" = max(Pop)) %>%
+  select(!2:6) %>% distinct()
+glimpse(tidy6)
+```
+
+*Finally, I computed overall summary statistics for the dataset - each statistic was computed using summarize and then bound into a data frame with rbind and cbind.* 
+
+```{R}
+Mean <- tidy1 %>% summarize_at(4:6,mean,na.rm=T)
+SD <- tidy1 %>% summarize_at(4:6,sd,na.rm=T)
+Var <- tidy1 %>% summarize_at(4:6,var,na.rm=T)
+Min <- tidy1 %>% summarize_at(4:6,min,na.rm=T)
+Median <- tidy1 %>% summarize_at(4:6,median,na.rm=T)
+Max <- tidy1 %>% summarize_at(4:6,max,na.rm=T)
+Count <- tidy1 %>% summarize_at(4:6,length)
+Unique <- tidy1 %>% summarize_at(4:6,n_distinct)
+
+Stats1 <- as.data.frame(rbind(Mean, SD, Var, Min, Median, Max, Count, Unique))
+Names <- as.data.frame(rbind("Mean", "SD", "Var", "Min", "Median", "Max", "Count", "Unique"))
+Stats <- cbind(Names, Stats1) %>% rename("Indicator"=V1)
+Stats
+```
+
+*Overall, we can see that the SD/variance are high for all three numeric variables, but especially for total population. A quick look at the population z-scores (shown below) reveals that China and India possess far larger populations than any other nations - these two values contribute significantly to the spread of the population variable. For the GDP growth variable, we see that the mean is positive - this is sensible because GDP must increase over time in order to counteract inflation pressures. The mean and median of the GDP growth variable are extremely similar, indicating that it is not skewed. Finally, GDP per capita is the only variable that possesses a unique value for all 9301 observations. It also has a median that is more than two orders of magnitude smaller than its mean; this indicates a significant right skew.*
+
+```{R}
+tidy5 %>% arrange(desc(zPop)) %>% slice(1:10) %>% select(`Country Name`, zPop)
+```
+
+# Visualizations
+
+*To begin, a correlation matrix was computed for the three numeric variables using cor(). Due to their extensive spread, z-scores were used in place of actual values. Despite this, none of the variables appear to have a strong relationship.*
+
+```{R}
+tidycor <- tidy5 %>% select(5:7) %>% cor()
+tidycor
+```
+
+*This correlation matrix was used to create a correlation heatmap for the data.The dark colors indicate weak correlations between the three numeric variables.*
+
+```{R}
+corframe <- tidycor %>% as.data.frame() %>%
+  rownames_to_column%>%
+  pivot_longer(-1,names_to="name",values_to="correlation")
+corframe %>% ggplot(aes(rowname, name, fill=correlation))+
+  geom_tile() +
+  geom_text(aes(label=round(correlation,3))) +
+  scale_fill_gradientn(colours = c("blue", "green", "red"))
+```
+
+*The next plot visualizes the relationship between mean annual GDP growth and mean per-capita GDP grouped by country. A log scale was required to graph GDP per capita on a continuous y-axis - this demonstrates the extreme disparities between values for this variable across different nations.*
+
+```{R}
+library(ggplot2)
+tidy1 %>% group_by(`Country Name`) %>%
+  summarize_if(is.numeric, mean, na.rm=T) %>%
+  mutate("Population Quartile" = as.factor(ntile(`Population, total`, 4))) %>%
+  ggplot(aes(x=`GDP growth (annual %)`, y=`GDP per capita (constant LCU)`, color=`Population Quartile`)) +
+  geom_point(stat="summary") +
+  scale_y_log10() +
+  theme_bw() +
+  ggtitle("Worldwide GDP Growth vs GDP Per Capita for Different Population Catergories") + 
+  theme(plot.title = element_text(size=10), axis.title = element_text(size=10), legend.title = element_text(size=10))
+```
+
+*The spread of GDP per capita appears to decrease with increasing population quartile, but spread for GDP growth demonstrates an opposite pattern. It is difficult to say why this is the case - perhaps larger countries are less prone to variation in individual standard of living over time, yet also show more discrepancies with respect to overall growth. The only population quartile that has some evidence of a pattern is the first, which exhibits a positive relationship between the two variables. The general cloud of points lacks any clear relation, which is consistent with the weak correlation shown by the correlation matrix.*
+
+*Lastly, I chose to show GDP growth as a function of time for Earth's 10 current most populous countries. I initially filtered the data to determine their identities.*
+
+```{R}
+tidy1 %>% filter(year=="2018") %>% arrange(desc(`Population, total`)) %>% slice(1:10)
+```
+
+*GDP growth was then shown for each country across the entire time frame of the observations.*
+
+```{R}
+tidy1 %>% filter(`Country Name`==c("China", "India", "United States", "Indonesia", "Pakistan", "Brazil", "Nigeria", "Bangladesh", "Russian Federation", "Mexico")) %>%
+  group_by(`Country Name`) %>%
+  mutate(Year=as.numeric(year)) %>%
+  ggplot(aes(x=Year, y=`GDP growth (annual %)`)) +
+  geom_line(aes(color=`Country Name`), size=1) + 
+  geom_point() + 
+  scale_x_continuous(breaks=seq(1960,2020,10)) +
+  theme_dark() +
+  ggtitle("GDP Growth for Earth's 10 Most Populous Countries (Current) from 1960-2018") + 
+  theme(plot.title = element_text(size=10), axis.title = element_text(size=10), legend.title = element_text(size=10))
+```
+
+*Every nation included exhibits positive GDP growth for the majority of the specified time period, which could be a factor in supporting their large populations. We can also see that nations such as India and the United States have experienced relatively smooth growth, while others such as China, Brazil, and Nigeria have seen more variation. The Russian Federation arrives late due to a lack of data from its time as the U.S.S.R. - conversely, Brazil, Indonesia, and Nigeria lack data more recent than 2010. This may be due to cases dropped from the removal of NAs.*
+
+# Clustering
+
+*In order to facilitate an accurate cluster analysis, an optimal silhouette width must be selected. The following plot shows that 2 clusters maximizes sillouhete width for the three selected variables.*
+
+```{R}
+library(cluster)
+tidy5_nums <- tidy5 %>% select(5:7)
+gower1<-daisy(tidy5_nums,metric="gower")
+
+sil_width<-vector()
+for(i in 2:10){  
+  pam_fit <- pam(gower1, diss = TRUE, k = i)  
+  sil_width[i] <- pam_fit$silinfo$avg.width  
+}
+
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name="k",breaks=1:10)
+```
+
+*The following silhouette plot was generated after clustering via pam. The average width is 0.37, which indicates a weak structure.*
+
+```{R}
+pam <- gower1 %>% pam(k=2, diss=T)
+plot(pam, which=2)
+```
+
+*The following multi-faceted plot shows how clusters were assigned based on the three numeric variables.*
+
+```{R}
+final<-tidy5_nums%>%mutate(cluster=as.factor(pam$clustering))
+library(GGally)
+ggpairs(final, columns=1:3, aes(color=cluster))
+```
+
+*GDP growth exhibits the strongest correlation with the other two variables, indicating that it has the most control over the spread of the points. The scatterplots also distinguish GDP growth from the other two variables - both population and GDP per capita have high outliers that generate a heavy right skew (as detailed above), while GDP growth is contained within a much smaller range. Irrespective of these patterns, all correlations are weak and likely artificial in nature.*

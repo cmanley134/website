@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Carson Manley" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 2</title>
+    <meta name="generator" content="Hugo 0.69.2" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project2/">Project 2</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="carson-manley" class="section level3">
+<h3>Carson Manley</h3>
+</div>
+<div id="cwm2477" class="section level3">
+<h3>cwm2477</h3>
+<pre class="r"><code>class_diag&lt;-function(probs,truth){
+  
+  if(is.numeric(truth)==FALSE &amp; is.logical(truth)==FALSE) truth&lt;-as.numeric(truth)-1
+  
+  tab&lt;-table(factor(probs&gt;.5,levels=c(&quot;FALSE&quot;,&quot;TRUE&quot;)),truth)
+  prediction&lt;-ifelse(probs&gt;.5,1,0)
+  acc=mean(truth==prediction)
+  sens=mean(prediction[truth==1]==1)
+  spec=mean(prediction[truth==0]==0)
+  ppv=mean(truth[prediction==1]==1)
+  
+  #CALCULATE EXACT AUC
+  ord&lt;-order(probs, decreasing=TRUE)
+  probs &lt;- probs[ord]; truth &lt;- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup&lt;-c(probs[-1]&gt;=probs[-length(probs)], FALSE)
+  TPR&lt;-c(0,TPR[!dup],1); FPR&lt;-c(0,FPR[!dup],1)
+  
+  n &lt;- length(TPR)
+  auc&lt;- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}</code></pre>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
+## ✓ tibble  2.1.3     ✓ dplyr   0.8.3
+## ✓ tidyr   1.0.2     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(readr)
+GDP &lt;- read_csv(&quot;GDP.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   .default = col_double(),
+##   `Country Name` = col_character(),
+##   `Country Code` = col_character(),
+##   `Indicator Name` = col_character(),
+##   `Indicator Code` = col_character()
+## )</code></pre>
+<pre><code>## See spec(...) for full column specifications.</code></pre>
+<pre class="r"><code>POP &lt;- read_csv(&quot;POP.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   .default = col_double(),
+##   `Country Name` = col_character(),
+##   `Country Code` = col_character(),
+##   `Indicator Name` = col_character(),
+##   `Indicator Code` = col_character()
+## )
+## See spec(...) for full column specifications.</code></pre>
+<pre class="r"><code>GDP_per_capita &lt;- read_csv(&quot;GDP_PC.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   .default = col_double(),
+##   `Country Name` = col_character(),
+##   `Country Code` = col_character(),
+##   `Indicator Name` = col_character(),
+##   `Indicator Code` = col_character()
+## )
+## See spec(...) for full column specifications.</code></pre>
+<pre class="r"><code>firsttwo &lt;- GDP %&gt;% full_join(POP)</code></pre>
+<pre><code>## Joining, by = c(&quot;Country Name&quot;, &quot;Country Code&quot;, &quot;Indicator Name&quot;, &quot;Indicator Code&quot;, &quot;1961&quot;, &quot;1962&quot;, &quot;1963&quot;, &quot;1964&quot;, &quot;1965&quot;, &quot;1966&quot;, &quot;1967&quot;, &quot;1968&quot;, &quot;1969&quot;, &quot;1970&quot;, &quot;1971&quot;, &quot;1972&quot;, &quot;1973&quot;, &quot;1974&quot;, &quot;1975&quot;, &quot;1976&quot;, &quot;1977&quot;, &quot;1978&quot;, &quot;1979&quot;, &quot;1980&quot;, &quot;1981&quot;, &quot;1982&quot;, &quot;1983&quot;, &quot;1984&quot;, &quot;1985&quot;, &quot;1986&quot;, &quot;1987&quot;, &quot;1988&quot;, &quot;1989&quot;, &quot;1990&quot;, &quot;1991&quot;, &quot;1992&quot;, &quot;1993&quot;, &quot;1994&quot;, &quot;1995&quot;, &quot;1996&quot;, &quot;1997&quot;, &quot;1998&quot;, &quot;1999&quot;, &quot;2000&quot;, &quot;2001&quot;, &quot;2002&quot;, &quot;2003&quot;, &quot;2004&quot;, &quot;2005&quot;, &quot;2006&quot;, &quot;2007&quot;, &quot;2008&quot;, &quot;2009&quot;, &quot;2010&quot;, &quot;2011&quot;, &quot;2012&quot;, &quot;2013&quot;, &quot;2014&quot;, &quot;2015&quot;, &quot;2016&quot;, &quot;2017&quot;, &quot;2018&quot;)</code></pre>
+<pre class="r"><code>gdppop &lt;- firsttwo %&gt;% full_join(GDP_per_capita) %&gt;% glimpse</code></pre>
+<pre><code>## Joining, by = c(&quot;Country Name&quot;, &quot;Country Code&quot;, &quot;Indicator Name&quot;, &quot;Indicator Code&quot;, &quot;1961&quot;, &quot;1962&quot;, &quot;1963&quot;, &quot;1964&quot;, &quot;1965&quot;, &quot;1966&quot;, &quot;1967&quot;, &quot;1968&quot;, &quot;1969&quot;, &quot;1970&quot;, &quot;1971&quot;, &quot;1972&quot;, &quot;1973&quot;, &quot;1974&quot;, &quot;1975&quot;, &quot;1976&quot;, &quot;1977&quot;, &quot;1978&quot;, &quot;1979&quot;, &quot;1980&quot;, &quot;1981&quot;, &quot;1982&quot;, &quot;1983&quot;, &quot;1984&quot;, &quot;1985&quot;, &quot;1986&quot;, &quot;1987&quot;, &quot;1988&quot;, &quot;1989&quot;, &quot;1990&quot;, &quot;1991&quot;, &quot;1992&quot;, &quot;1993&quot;, &quot;1994&quot;, &quot;1995&quot;, &quot;1996&quot;, &quot;1997&quot;, &quot;1998&quot;, &quot;1999&quot;, &quot;2000&quot;, &quot;2001&quot;, &quot;2002&quot;, &quot;2003&quot;, &quot;2004&quot;, &quot;2005&quot;, &quot;2006&quot;, &quot;2007&quot;, &quot;2008&quot;, &quot;2009&quot;, &quot;2010&quot;, &quot;2011&quot;, &quot;2012&quot;, &quot;2013&quot;, &quot;2014&quot;, &quot;2015&quot;, &quot;2016&quot;, &quot;2017&quot;, &quot;2018&quot;)</code></pre>
+<pre><code>## Observations: 792
+## Variables: 63
+## $ `Country Name`   &lt;chr&gt; &quot;Aruba&quot;, &quot;Afghanistan&quot;, &quot;Angola&quot;, &quot;Albania&quot;, &quot;Andorr…
+## $ `Country Code`   &lt;chr&gt; &quot;ABW&quot;, &quot;AFG&quot;, &quot;AGO&quot;, &quot;ALB&quot;, &quot;AND&quot;, &quot;ARB&quot;, &quot;ARE&quot;, &quot;AR…
+## $ `Indicator Name` &lt;chr&gt; &quot;GDP growth (annual %)&quot;, &quot;GDP growth (annual %)&quot;, &quot;G…
+## $ `Indicator Code` &lt;chr&gt; &quot;NY.GDP.MKTP.KD.ZG&quot;, &quot;NY.GDP.MKTP.KD.ZG&quot;, &quot;NY.GDP.MK…
+## $ `1961`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 5.427843, NA, NA, NA, 2.…
+## $ `1962`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, -0.8520215, NA, NA, NA, …
+## $ `1963`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, -5.3081968, NA, NA, NA, …
+## $ `1964`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 10.130298, NA, NA, NA, 6…
+## $ `1965`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 10.569433, NA, NA, NA, 5…
+## $ `1966`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, -0.6597262, NA, NA, NA, …
+## $ `1967`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 3.191997, NA, NA, NA, 6.…
+## $ `1968`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 4.8225008, NA, NA, NA, 5…
+## $ `1969`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 9.679526, NA, NA, NA, 7.…
+## $ `1970`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 3.0456433, NA, NA, NA, 7…
+## $ `1971`           &lt;dbl&gt; NA, NA, NA, NA, 4.649465, NA, NA, 5.658131, NA, NA, …
+## $ `1972`           &lt;dbl&gt; NA, NA, NA, NA, 8.149743, NA, NA, 1.628417, NA, NA, …
+## $ `1973`           &lt;dbl&gt; NA, NA, NA, NA, 7.7884672, NA, NA, 2.8117540, NA, NA…
+## $ `1974`           &lt;dbl&gt; NA, NA, NA, NA, 5.6187897, NA, NA, 5.5338044, NA, NA…
+## $ `1975`           &lt;dbl&gt; NA, NA, NA, NA, 0.5422057, NA, NA, -0.0284121, NA, N…
+## $ `1976`           &lt;dbl&gt; NA, NA, NA, NA, 3.30378705, 15.82066466, 16.52685651…
+## $ `1977`           &lt;dbl&gt; NA, NA, NA, NA, 2.8385756, 8.2371949, 21.4393302, 6.…
+## $ `1978`           &lt;dbl&gt; NA, NA, NA, NA, 1.4630002, -0.6605291, -1.5896033, -…
+## $ `1979`           &lt;dbl&gt; NA, NA, NA, NA, 0.0415572, 11.5330034, 20.9235731, 1…
+## $ `1980`           &lt;dbl&gt; NA, NA, NA, NA, 2.2087276, 9.1402528, 23.8747749, 1.…
+## $ `1981`           &lt;dbl&gt; NA, NA, -4.4000012, 5.7456353, -0.1324745, 2.9180579…
+## $ `1982`           &lt;dbl&gt; NA, NA, 0.00000000, 2.94859680, 1.24646111, -9.07078…
+## $ `1983`           &lt;dbl&gt; NA, NA, 4.2000014, 1.1049383, 1.7701183, -6.8365647,…
+## $ `1984`           &lt;dbl&gt; NA, NA, 6.00000216, -1.25159664, 1.78468669, 1.37096…
+## $ `1985`           &lt;dbl&gt; NA, NA, 3.499999, 1.780644, 2.321433, -2.290811, -3.…
+## $ `1986`           &lt;dbl&gt; NA, NA, 2.900002, 5.637243, 3.253322, 4.705735, -14.…
+## $ `1987`           &lt;dbl&gt; 16.0784314, NA, 4.0827486, -0.7878427, 5.5471222, -0…
+## $ `1988`           &lt;dbl&gt; 18.648649, NA, 6.128890, -1.420040, 5.094326, 5.6053…
+## $ `1989`           &lt;dbl&gt; 12.12984055, NA, 0.04162146, 9.83654897, 4.82703424,…
+## $ `1990`           &lt;dbl&gt; 3.9614017, NA, -3.4500987, -9.5756402, 3.7813876, 13…
+## $ `1991`           &lt;dbl&gt; 7.9628725, NA, 0.9913593, -28.0021417, 2.5460029, 1.…
+## $ `1992`           &lt;dbl&gt; 5.88235294, NA, -5.83828073, -7.18711092, 0.92921196…
+## $ `1993`           &lt;dbl&gt; 7.3076923, NA, -23.9834174, 9.5594117, -1.0314840, 3…
+## $ `1994`           &lt;dbl&gt; 8.2039028, NA, 1.3393634, 8.3028666, 2.3831877, 3.20…
+## $ `1995`           &lt;dbl&gt; 2.5471427, NA, 15.0000000, 13.3223333, 2.7574992, 2.…
+## $ `1996`           &lt;dbl&gt; 1.1857900, NA, 13.5443698, 9.0999994, 4.6497401, 4.5…
+## $ `1997`           &lt;dbl&gt; 7.046872, NA, 7.274277, -10.919984, 9.067672, 4.2563…
+## $ `1998`           &lt;dbl&gt; 1.9919884, NA, 4.6911465, 8.8300877, 3.1947903, 5.26…
+## $ `1999`           &lt;dbl&gt; 1.238039, NA, 2.181490, 12.889897, 4.099081, 1.79551…
+## $ `2000`           &lt;dbl&gt; 7.6165897, NA, 3.0546242, 6.9500361, 3.5283613, 5.47…
+## $ `2001`           &lt;dbl&gt; -2.971257, NA, 4.205999, 8.290070, 4.546768, 1.58442…
+## $ `2002`           &lt;dbl&gt; -3.2736469, NA, 13.6656865, 4.5399606, 6.4710147, 0.…
+## $ `2003`           &lt;dbl&gt; 1.9755473, 8.8322778, 2.9898500, 5.5300508, 12.16871…
+## $ `2004`           &lt;dbl&gt; 7.9115647, 1.4141180, 10.9528618, 5.5099987, 7.64786…
+## $ `2005`           &lt;dbl&gt; 1.2143488, 11.2297148, 15.0289153, 5.5299148, 7.3969…
+## $ `2006`           &lt;dbl&gt; 1.050607, 5.357403, 11.547683, 5.900084, 4.536353, 6…
+## $ `2007`           &lt;dbl&gt; 1.80022585, 13.82631954, 14.01001824, 5.97998204, 0.…
+## $ `2008`           &lt;dbl&gt; -0.09070775, 3.92498382, 11.16613833, 7.49996956, -8…
+## $ `2009`           &lt;dbl&gt; -10.5197476, 21.3905284, 0.8587126, 3.3500674, -3.69…
+## $ `2010`           &lt;dbl&gt; -3.6850296, 14.3624415, 4.8592196, 3.7068914, -5.358…
+## $ `2011`           &lt;dbl&gt; 3.4460548, 0.4263548, 3.4719814, 2.5453227, -4.64654…
+## $ `2012`           &lt;dbl&gt; -1.36986301, 12.75228708, 8.54214734, 1.41752441, -1…
+## $ `2013`           &lt;dbl&gt; 4.19823232, 5.60074466, 4.95459048, 1.00198871, 0.35…
+## $ `2014`           &lt;dbl&gt; 0.8482278, 2.7245434, 4.8226255, 1.7744868, 2.277683…
+## $ `2015`           &lt;dbl&gt; -0.4505858, 1.4513147, 0.9435756, 2.2187515, 0.84220…
+## $ `2016`           &lt;dbl&gt; -0.2112251, 2.2603142, -2.5800972, 3.3148048, 1.8891…
+## $ `2017`           &lt;dbl&gt; 1.33051104, 2.66529205, -0.14720743, 3.82108142, 1.7…
+## $ `2018`           &lt;dbl&gt; NA, 1.030660, -2.133493, 4.145238, 1.629345, 2.04597…
+## $ `1960`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …</code></pre>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<pre class="r"><code>bank &lt;- gdppop %&gt;% pivot_longer(5:63, names_to=&quot;year&quot;, values_to=&quot;value&quot;) %&gt;% 
+  select(!`Indicator Code`) %&gt;%
+  pivot_wider(names_from = &quot;Indicator Name&quot;, values_from = &quot;value&quot;) %&gt;%
+  na.omit %&gt;% rename(&quot;Country&quot; = `Country Name`, &quot;GDP_growth&quot; = `GDP growth (annual %)`, &quot;Pop&quot; = `Population, total`, &quot;GDP_pc&quot; = `GDP per capita (current US$)`)
+glimpse(bank)</code></pre>
+<pre><code>## Observations: 11,412
+## Variables: 6
+## $ Country        &lt;chr&gt; &quot;Aruba&quot;, &quot;Aruba&quot;, &quot;Aruba&quot;, &quot;Aruba&quot;, &quot;Aruba&quot;, &quot;Aruba&quot;, …
+## $ `Country Code` &lt;chr&gt; &quot;ABW&quot;, &quot;ABW&quot;, &quot;ABW&quot;, &quot;ABW&quot;, &quot;ABW&quot;, &quot;ABW&quot;, &quot;ABW&quot;, &quot;ABW&quot;…
+## $ year           &lt;chr&gt; &quot;1987&quot;, &quot;1988&quot;, &quot;1989&quot;, &quot;1990&quot;, &quot;1991&quot;, &quot;1992&quot;, &quot;1993&quot;…
+## $ GDP_growth     &lt;dbl&gt; 16.07843137, 18.64864865, 12.12984055, 3.96140173, 7.9…
+## $ Pop            &lt;dbl&gt; 61833, 61079, 61032, 62149, 64622, 68235, 72504, 76700…
+## $ GDP_pc         &lt;dbl&gt; 7885.797, 9764.790, 11392.456, 12307.312, 13496.003, 1…</code></pre>
+<p><em>The three datasets selected for this project were pulled from World Bank Open Data, a source for financial and demographic records spanning the entire globe. I chose to examine worldwide data for population, percent GDP growth and per-capita GDP (current USD) - the main variables in the dataset include these three as well as country, country code, and year. There are 11412 total country-year observations (i.e. Germany 1987) ranging from 1961-2018.</em></p>
+</div>
+<div id="part-1---manova" class="section level1">
+<h1>Part 1 - MANOVA</h1>
+<p><em>I’ll begin by performing a MANOVA to determine whether “Wealthy” countries (those with a per-capita GDP that is larger than the median value) differ from non-wealthy countries with respect to GDP growth and population size.</em></p>
+<pre class="r"><code>bank &lt;- bank %&gt;% mutate(&quot;Wealthy&quot; = ifelse(GDP_pc&gt;median(GDP_pc),&quot;Yes&quot;,&quot;No&quot;))
+man1 &lt;- manova(cbind(GDP_growth, Pop)~Wealthy, data=bank)
+summary(man1)</code></pre>
+<pre><code>##              Df    Pillai approx F num Df den Df    Pr(&gt;F)    
+## Wealthy       1 0.0089292   51.395      2  11409 &lt; 2.2e-16 ***
+## Residuals 11410                                               
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p><em>Based on the results of this MANOVA, we can be confident that there is a difference in GDP growth, population, or both based on a country falling under the wealthy designation during a given year.</em></p>
+<pre class="r"><code>summary.aov(man1)</code></pre>
+<pre><code>##  Response GDP_growth :
+##                Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## Wealthy         1   2514 2514.08  77.066 &lt; 2.2e-16 ***
+## Residuals   11410 372221   32.62                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response Pop :
+##                Df     Sum Sq    Mean Sq F value    Pr(&gt;F)    
+## Wealthy         1 1.7447e+19 1.7447e+19  28.357 1.028e-07 ***
+## Residuals   11410 7.0199e+21 6.1524e+17                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p><em>This summary of the individual ANOVAs shows that both of the numeric variables differ based on the “Wealthy” designation.</em></p>
+<pre class="r"><code>t.test(bank$GDP_growth~bank$Wealthy, var.eq=T)</code></pre>
+<pre><code>## 
+##  Two Sample t-test
+## 
+## data:  bank$GDP_growth by bank$Wealthy
+## t = 8.7787, df = 11410, p-value &lt; 2.2e-16
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  0.7291217 1.1483309
+## sample estimates:
+##  mean in group No mean in group Yes 
+##          4.349104          3.410377</code></pre>
+<pre class="r"><code>t.test(bank$Pop~bank$Wealthy, var.eq=T)</code></pre>
+<pre><code>## 
+##  Two Sample t-test
+## 
+## data:  bank$Pop by bank$Wealthy
+## t = 5.3252, df = 11410, p-value = 1.028e-07
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##   49414711 106984780
+## sample estimates:
+##  mean in group No mean in group Yes 
+##         308919508         230719763</code></pre>
+<p><em>A t-test for each ANOVA shows that non-wealthy countries have a higher mean GDP growth and a larger population than wealthy ones. At this point a single MANOVA, two ANOVAs and two t-tests have been performed. This means that the probability of a type-1 error is 1-(0.95^5) = 0.2262, and the Bonferroni-corrected significance threshold is 0.05/5 = 0.01. Despite this, all results remain significant with the p-values of ~0 and 1.028e-7 both falling below the cutoff of 0.01.</em></p>
+<p><em>With respect to assumptions, multivariate normality is likely to be satisfied due to the large sample size of over 11,000 observations. Despite this, the MANOVA is a demanding test and there is a significant chance that one or more of its other assumptions are not met.</em></p>
+</div>
+<div id="part-2---randomization-test" class="section level1">
+<h1>Part 2 - Randomization Test</h1>
+<p><em>I’ll begin by examining the GDP growth variable to determine whether or not there is a significant difference in GDP growth between India and China over the last ~50 years. The null and alternative hypotheses for the test are detailed below:</em></p>
+<p><em>Ho: There has not been a significant disparity in GDP growth between India and China over the past 50 years.</em>
+<em>Ha: There has been a significant disparity in GDP growth between India and China over the past 50 years.</em></p>
+<pre class="r"><code>bank1 &lt;- bank %&gt;% filter(Country==c(&quot;China&quot;, &quot;India&quot;))
+
+b &lt;- vector()
+
+for(i in 1:5000){
+new&lt;-data.frame(GDP_growth=sample(bank1$GDP_growth), Country=bank1$Country) 
+b[i]&lt;-mean(new[new$Country==&quot;China&quot;,]$GDP_growth)-
+              mean(new[new$Country==&quot;India&quot;,]$GDP_growth)
+}
+
+bank1 %&gt;% group_by(Country) %&gt;% summarize(means=mean(GDP_growth))%&gt;%summarize(`mean_diff:`=diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `mean_diff:`
+##          &lt;dbl&gt;
+## 1        -3.07</code></pre>
+<pre class="r"><code>mean(b&lt; -3.073186)*2</code></pre>
+<pre><code>## [1] 0.014</code></pre>
+<p><em>Since the calculated p-value is less than 0.05, the test is significant and we can reject the null hypothesis - there has been a significant difference in GDP growth between India and China. Specifically, China’s GDP has grown at a rate approximately 3% less than that of India. This disparity is represented visually by the plot below.</em></p>
+<pre class="r"><code>hist(b, main=&quot;&quot;,ylab=&quot;&quot;); abline(v = -3.073186,col=&quot;red&quot;)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+<div id="part-3---linear-regression-model" class="section level1">
+<h1>Part 3 - Linear Regression Model</h1>
+<p><em>This linear regression model will be used to predict whether mean GDP growth (computed with all data for each country) differs across different levels of population and values for mean GDP per capita. For this test, the population variable is given a catergorical analog by placing each country into one of four quartiles based on their respective populations (once again, this is a mean value calculated across all years).</em></p>
+<pre class="r"><code>library(lmtest)</code></pre>
+<pre><code>## Loading required package: zoo</code></pre>
+<pre><code>## 
+## Attaching package: &#39;zoo&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric</code></pre>
+<pre class="r"><code>library(sandwich)
+
+bank2 &lt;- bank %&gt;% group_by(Country) %&gt;% summarize_at(3:5, mean, na.rm=T) %&gt;% mutate(&quot;Pop_quartile&quot; = as.factor(ntile(Pop, 4)))
+
+bankmod &lt;- lm(GDP_growth ~ Pop_quartile*GDP_pc, data=bank2)
+summary(bankmod)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = GDP_growth ~ Pop_quartile * GDP_pc, data = bank2)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -8.8811 -0.9542 -0.1672  0.7524 11.7222 
+## 
+## Coefficients:
+##                        Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)           4.187e+00  3.237e-01  12.935  &lt; 2e-16 ***
+## Pop_quartile2        -6.134e-01  4.472e-01  -1.372  0.17135    
+## Pop_quartile3        -1.706e-01  4.571e-01  -0.373  0.70931    
+## Pop_quartile4         3.684e-01  4.560e-01   0.808  0.41997    
+## GDP_pc               -3.286e-05  1.340e-05  -2.452  0.01490 *  
+## Pop_quartile2:GDP_pc  6.642e-05  2.524e-05   2.632  0.00902 ** 
+## Pop_quartile3:GDP_pc -1.049e-05  4.104e-05  -0.256  0.79844    
+## Pop_quartile4:GDP_pc -5.898e-05  3.652e-05  -1.615  0.10756    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.048 on 249 degrees of freedom
+## Multiple R-squared:  0.06722,    Adjusted R-squared:  0.041 
+## F-statistic: 2.563 on 7 and 249 DF,  p-value: 0.01445</code></pre>
+<p><em>For this model, the intercept coefficient represents the estimated average GDP growth (%) for a country in the first population quartile with a per-capita GDP of 0. Each of the Pop_quartile coefficients is the predicted increase (quartile 4) or decrease (quartiles 2/3) in GDP growth resulting from a country falling into each of the other three quartiles. The GDP_pc coefficient is the predicted decrease in GDP growth per dollar increase in GDP per capita. Finally, each of the interaction coefficients are the predicted increase (quartile 2) or decrease (quartiles 3/4) in the effect of GDP per capita on GDP growth based on a country’s population quartile.</em></p>
+<pre class="r"><code>bank2 %&gt;% ggplot(aes(x=GDP_pc, y=GDP_growth, color=Pop_quartile)) +
+  geom_point() +
+  geom_smooth(method=lm) +
+  ggtitle(&quot;Linear Regression - Effects of GDP Per-Capita and Population Size on GDP Growth&quot;)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<pre class="r"><code>plot(bankmod, 1) #Linearity</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p><em>Based on the plot of residuals vs fitted values, there is significant clustering that could violate the linearity assumption. While no obvious nonlinear patterns appear, the spread of variance increases near the center of the cluster. Regardless, it certainly isn’t a random scatter of points.</em></p>
+<pre class="r"><code>plot(bankmod, 2) #Normality</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p><em>The QQ plot is roughly linear through the middle section but curves at the tails, indicating the presence of more extreme values than expected from a normal distribution. Normality is also questionable for this dataset.</em></p>
+<pre class="r"><code>bptest(bankmod) #Homoskedasticity</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  bankmod
+## BP = 10.874, df = 7, p-value = 0.1442</code></pre>
+<p><em>Based on the Breusch-Pagan test results, homoskedasticity is satisfied - the p-value of 0.1442 is larger than 0.05 and is not sufficient to reject the null hypothesis.</em></p>
+<pre class="r"><code>coeftest(bankmod, vcov=vcovHC(bankmod)) #Robust SEs</code></pre>
+<pre><code>## 
+## t test of coefficients:
+## 
+##                         Estimate  Std. Error t value  Pr(&gt;|t|)    
+## (Intercept)           4.1870e+00  4.4894e-01  9.3262 &lt; 2.2e-16 ***
+## Pop_quartile2        -6.1342e-01  5.4470e-01 -1.1262  0.261180    
+## Pop_quartile3        -1.7060e-01  5.6511e-01 -0.3019  0.762997    
+## Pop_quartile4         3.6837e-01  4.8496e-01  0.7596  0.448221    
+## GDP_pc               -3.2863e-05  1.4302e-05 -2.2978  0.022402 *  
+## Pop_quartile2:GDP_pc  6.6417e-05  4.0608e-05  1.6356  0.103195    
+## Pop_quartile3:GDP_pc -1.0491e-05  2.7171e-05 -0.3861  0.699744    
+## Pop_quartile4:GDP_pc -5.8982e-05  1.9786e-05 -2.9809  0.003159 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p><em>After utilizing robust standard errors, there are several changes to the results of the regression - a larger standard error for the interaction between population quartile #2 and GDP per capita negates the significance of the interaction coefficient, while a smaller standard error has the opposite effect for the interaction between population quartile #4 and GDP per capita.</em></p>
+<p><em>The multiple r-squared value from the original model is 0.06722, meaning that 6.722% of the variation in GDP growth can be explained by variation in GDP per capita, population quartile, and their interatctions.</em></p>
+</div>
+<div id="part-4---bootstrapped-standard-errors" class="section level1">
+<h1>Part 4 - Bootstrapped Standard Errors</h1>
+<pre class="r"><code>RNGkind(sample.kind=&quot;Rounding&quot;)</code></pre>
+<pre><code>## Warning in RNGkind(sample.kind = &quot;Rounding&quot;): non-uniform &#39;Rounding&#39; sampler
+## used</code></pre>
+<pre class="r"><code>set.seed(348)
+
+samp_distn&lt;-replicate(5000, {
+  boot_dat&lt;-bank2[sample(nrow(bank2),replace=TRUE),]
+  fit&lt;-lm(GDP_growth ~ Pop_quartile*GDP_pc, data=boot_dat)
+  coef(fit)
+})
+
+samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept) Pop_quartile2 Pop_quartile3 Pop_quartile4       GDP_pc
+## 1   0.4454347     0.5280798     0.5602204     0.4842369 1.471605e-05
+##   Pop_quartile2:GDP_pc Pop_quartile3:GDP_pc Pop_quartile4:GDP_pc
+## 1         3.183699e-05         2.867254e-05         2.024719e-05</code></pre>
+<pre class="r"><code>coeftest(bankmod, vcov=vcovHC(bankmod))</code></pre>
+<pre><code>## 
+## t test of coefficients:
+## 
+##                         Estimate  Std. Error t value  Pr(&gt;|t|)    
+## (Intercept)           4.1870e+00  4.4894e-01  9.3262 &lt; 2.2e-16 ***
+## Pop_quartile2        -6.1342e-01  5.4470e-01 -1.1262  0.261180    
+## Pop_quartile3        -1.7060e-01  5.6511e-01 -0.3019  0.762997    
+## Pop_quartile4         3.6837e-01  4.8496e-01  0.7596  0.448221    
+## GDP_pc               -3.2863e-05  1.4302e-05 -2.2978  0.022402 *  
+## Pop_quartile2:GDP_pc  6.6417e-05  4.0608e-05  1.6356  0.103195    
+## Pop_quartile3:GDP_pc -1.0491e-05  2.7171e-05 -0.3861  0.699744    
+## Pop_quartile4:GDP_pc -5.8982e-05  1.9786e-05 -2.9809  0.003159 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>sqrt(diag(vcov(bankmod)))%&gt;%t%&gt;%as.data.frame</code></pre>
+<pre><code>##   (Intercept) Pop_quartile2 Pop_quartile3 Pop_quartile4       GDP_pc
+## 1   0.3236885     0.4471564     0.4571096     0.4560148 1.340296e-05
+##   Pop_quartile2:GDP_pc Pop_quartile3:GDP_pc Pop_quartile4:GDP_pc
+## 1          2.52353e-05         4.103845e-05         3.651876e-05</code></pre>
+<p><em>When comparing the standard error values across each of the three methods used, every standard error estimate from both the coeftest() output and boostrapping output is larger than its corresponding value from the original model except for the interactions between per-capita GDP and the 3rd/4th population quartiles. This discrepancy has an impact on p-values for the test - for the coeftest() and bootstrapping outputs, the interaction between population quartile 4 and per-capita GDP is significant instead of the interaction betwen population quartile 2 and per-capita GDP found in the original model.</em></p>
+<p><em>Between the bootstrapping/coeftest() outputs, standard errors are very similar with neither one displaing consistently higher or lower values across the board. With respect to the bootstrapping output, the only major difference is a significantly smaller standard error for the interaction between population quartile 2 and per-capita GDp, which could confer significance on that interaction.</em></p>
+</div>
+<div id="part-5---logistic-regression" class="section level1">
+<h1>Part 5 - Logistic Regression</h1>
+<pre class="r"><code>bank3 &lt;- bank2 %&gt;% mutate(&quot;Wealthy&quot; = ifelse(GDP_pc&gt;median(GDP_pc),1,0))
+bankmod1 &lt;- glm(Wealthy~Pop+GDP_growth, data=bank3, family=&quot;binomial&quot;)
+summary(bankmod1)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Wealthy ~ Pop + GDP_growth, family = &quot;binomial&quot;, 
+##     data = bank3)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.4990  -1.1929  -0.5259   1.1417   2.1756  
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept)  3.672e-01  2.682e-01   1.369   0.1711  
+## Pop         -4.517e-10  2.470e-10  -1.828   0.0675 .
+## GDP_growth  -7.462e-02  6.187e-02  -1.206   0.2278  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 356.27  on 256  degrees of freedom
+## Residual deviance: 349.91  on 254  degrees of freedom
+## AIC: 355.91
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<pre class="r"><code>exp(coef(bankmod1))</code></pre>
+<pre><code>## (Intercept)         Pop  GDP_growth 
+##   1.4436253   1.0000000   0.9280963</code></pre>
+<p><em>The exponentiated intercept coefficient for this model represents the predicted odds of falling under the “Wealthy” designation (mean GDP per capita larger than the median) for a country with a mean population size and mean GDP growth of 0. The exponentiated population coefficient predicts no change in the odds of a country being “Wealthy” per unit increase in population. The exponentiated GDP growth coefficient predicts a ~7% decrease in the odds of a country being “Wealthy” per unit increase in mean GDP growth.</em></p>
+<pre class="r"><code>probs &lt;- predict(bankmod1, type=&quot;response&quot;)
+pred &lt;- ifelse(probs&gt;0.5,1,0)
+table(prediction=pred, truth=bank3$Wealthy) %&gt;% addmargins</code></pre>
+<pre><code>##           truth
+## prediction   0   1 Sum
+##        0    52  35  87
+##        1    77  93 170
+##        Sum 129 128 257</code></pre>
+<pre class="r"><code>class_diag(probs, bank3$Wealthy)</code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.5642023 0.7265625 0.4031008 0.5470588 0.5974443</code></pre>
+<p><em>Specificity and recall are all relatively low for this model - this is clear based on the poor classification performance for non-wealthy countries. The model does a better job for wealthy countries as evidenced by a higher value for sensitivity. Despite this slight improvement, overall accuracy remains low, and this is reflected by the calculated AUC.</em></p>
+<pre class="r"><code>bank3$logit &lt;- predict(bankmod1)
+bank3 &lt;- bank3 %&gt;% mutate(Outcome=ifelse(GDP_pc&gt;median(GDP_pc),&quot;Wealthy&quot;, &quot;Non-wealthy&quot;))
+bank3$Outcome &lt;- factor(bank3$Outcome, levels=c(&quot;Wealthy&quot;, &quot;Non-wealthy&quot;))
+
+bank3 %&gt;% ggplot(aes(logit, fill=Outcome))+
+  geom_density(alpha=.3) +
+  geom_vline(xintercept=0,lty=2) +
+  ggtitle(&quot;Density of Log-odds by Outcome&quot;)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<pre class="r"><code>library(plotROC)
+bankplot &lt;- bank3 %&gt;% ggplot() +
+  geom_roc(aes(d=Wealthy,m=probs), n.cuts=0)
+bankplot</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<pre class="r"><code>calc_auc(bankplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.5974443</code></pre>
+<p><em>The AUC of 0.5974 for this model falls within the “poor” range - a value of ~0.6 indicates that for a pair of two observations where one is wealthy and the other is not, there is a roughly 60% chance that the predicted probability of being wealthy is higher for the wealthy observation.</em></p>
+<pre class="r"><code>#10-fold CV
+
+set.seed(1234)
+k=10
+
+data &lt;- bank3 %&gt;% sample_frac
+folds &lt;- ntile(1:nrow(bank3), n=10)
+
+diags&lt;-NULL
+for(i in 1:k){
+  train&lt;-data[folds!=i,] 
+  test&lt;-data[folds==i,]
+  truth&lt;-test$Wealthy
+  
+  fit&lt;-glm(Wealthy~Pop+GDP_growth,data=train,family=&quot;binomial&quot;)
+  prob&lt;-predict(fit,newdata = test,type=&quot;response&quot;)
+  
+  diags&lt;-rbind(diags,class_diag(prob,truth))
+}
+
+summarize_all(diags,mean)</code></pre>
+<pre><code>##         acc     sens      spec       ppv       auc
+## 1 0.5407692 0.668373 0.4685443 0.5575723 0.5926072</code></pre>
+</div>
+<div id="part-6---prediction-wlasso" class="section level1">
+<h1>Part 6 - Prediction w/LASSO</h1>
+<pre class="r"><code>library(glmnet)</code></pre>
+<pre><code>## Loading required package: Matrix</code></pre>
+<pre><code>## 
+## Attaching package: &#39;Matrix&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:tidyr&#39;:
+## 
+##     expand, pack, unpack</code></pre>
+<pre><code>## Loaded glmnet 3.0-2</code></pre>
+<pre class="r"><code>set.seed(1234)
+
+bankmod2 &lt;- glm(Wealthy ~ -1 + GDP_growth + Pop + Pop_quartile, data=bank3, family=&quot;binomial&quot;) #Country and GDP_pc don&#39;t make sense as predictors
+
+predictors &lt;- model.matrix(bankmod2)
+response &lt;- bank3 %&gt;% select(Wealthy) %&gt;% as.matrix
+
+cv &lt;- cv.glmnet(predictors, response, family=&quot;binomial&quot;)
+lasso1&lt;-glmnet(predictors, response, lambda = cv$lambda.1se, family=&quot;binomial&quot;)
+coef(lasso1)</code></pre>
+<pre><code>## 7 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                        s0
+## (Intercept)   -0.00778214
+## GDP_growth     0.00000000
+## Pop            .         
+## Pop_quartile1  .         
+## Pop_quartile2  .         
+## Pop_quartile3  .         
+## Pop_quartile4  .</code></pre>
+<p><em>Based on the results of this LASSO, GDP growth is the only significant predictor of the “Wealthy” designation. This could be ascribed to the fact that GDP growth is also a GDP-based indicator, whereas population represents a separate catergory of information.</em></p>
+<pre class="r"><code>set.seed(1234)
+k=10
+
+data &lt;- bank3 %&gt;% sample_frac
+folds &lt;- ntile(1:nrow(bank3), n=10)
+
+diags&lt;-NULL
+for(i in 1:k){
+  train&lt;-data[folds!=i,] 
+  test&lt;-data[folds==i,]
+  truth&lt;-test$Wealthy
+  
+  fit&lt;-glm(Wealthy~GDP_growth,data=train,family=&quot;binomial&quot;)
+  prob&lt;-predict(fit,newdata = test,type=&quot;response&quot;)
+  
+  diags&lt;-rbind(diags,class_diag(prob,truth))
+}
+
+summarize_all(diags,mean)</code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.5635385 0.6353175 0.5829887 0.6036151 0.6178227</code></pre>
+<p><em>This model has an AUC of 0.6178 for out-of-sample prediction, which is a slight improvement over the out-of-sample AUC of 0.5962 for the model from part 5.</em></p>
+</div>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

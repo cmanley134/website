@@ -1,0 +1,312 @@
+---
+title: "Project 2"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Carson Manley
+### cwm2477
+
+```{R}
+class_diag<-function(probs,truth){
+  
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  prediction<-ifelse(probs>.5,1,0)
+  acc=mean(truth==prediction)
+  sens=mean(prediction[truth==1]==1)
+  spec=mean(prediction[truth==0]==0)
+  ppv=mean(truth[prediction==1]==1)
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+```
+
+```{R}
+library(tidyverse)
+library(readr)
+GDP <- read_csv("GDP.csv")
+POP <- read_csv("POP.csv")
+GDP_per_capita <- read_csv("GDP_PC.csv")
+firsttwo <- GDP %>% full_join(POP)
+gdppop <- firsttwo %>% full_join(GDP_per_capita) %>% glimpse
+```
+
+# Introduction
+
+```{R}
+bank <- gdppop %>% pivot_longer(5:63, names_to="year", values_to="value") %>% 
+  select(!`Indicator Code`) %>%
+  pivot_wider(names_from = "Indicator Name", values_from = "value") %>%
+  na.omit %>% rename("Country" = `Country Name`, "GDP_growth" = `GDP growth (annual %)`, "Pop" = `Population, total`, "GDP_pc" = `GDP per capita (current US$)`)
+glimpse(bank)
+```
+
+*The three datasets selected for this project were pulled from World Bank Open Data, a source for financial and demographic records spanning the entire globe. I chose to examine worldwide data for population, percent GDP growth and per-capita GDP (current USD) - the main variables in the dataset include these three as well as country, country code, and year. There are 11412 total country-year observations (i.e. Germany 1987) ranging from 1961-2018.*
+
+# Part 1 - MANOVA
+
+*I'll begin by performing a MANOVA to determine whether "Wealthy" countries (those with a per-capita GDP that is larger than the median value) differ from non-wealthy countries with respect to GDP growth and population size.*
+
+```{R}
+bank <- bank %>% mutate("Wealthy" = ifelse(GDP_pc>median(GDP_pc),"Yes","No"))
+man1 <- manova(cbind(GDP_growth, Pop)~Wealthy, data=bank)
+summary(man1)
+```
+
+*Based on the results of this MANOVA, we can be confident that there is a difference in GDP growth, population, or both based on a country falling under the wealthy designation during a given year.*
+
+```{R}
+summary.aov(man1)
+```
+
+*This summary of the individual ANOVAs shows that both of the numeric variables differ based on the "Wealthy" designation.*
+
+```{R}
+t.test(bank$GDP_growth~bank$Wealthy, var.eq=T)
+t.test(bank$Pop~bank$Wealthy, var.eq=T)
+```
+
+*A t-test for each ANOVA shows that non-wealthy countries have a higher mean GDP growth and a larger population than wealthy ones. At this point a single MANOVA, two ANOVAs and two t-tests have been performed. This means that the probability of a type-1 error is 1-(0.95^5) = 0.2262, and the Bonferroni-corrected significance threshold is 0.05/5 = 0.01. Despite this, all results remain significant with the p-values of ~0 and 1.028e-7 both falling below the cutoff of 0.01.*
+
+*With respect to assumptions, multivariate normality is likely to be satisfied due to the large sample size of over 11,000 observations. Despite this, the MANOVA is a demanding test and there is a significant chance that one or more of its other assumptions are not met.*
+
+# Part 2 - Randomization Test
+
+*I'll begin by examining the GDP growth variable to determine whether or not there is a significant difference in GDP growth between India and China over the last ~50 years. The null and alternative hypotheses for the test are detailed below:*
+
+*Ho: There has not been a significant disparity in GDP growth between India and China over the past 50 years.*
+*Ha: There has been a significant disparity in GDP growth between India and China over the past 50 years.*
+
+```{R}
+bank1 <- bank %>% filter(Country==c("China", "India"))
+
+b <- vector()
+
+for(i in 1:5000){
+new<-data.frame(GDP_growth=sample(bank1$GDP_growth), Country=bank1$Country) 
+b[i]<-mean(new[new$Country=="China",]$GDP_growth)-
+              mean(new[new$Country=="India",]$GDP_growth)
+}
+
+bank1 %>% group_by(Country) %>% summarize(means=mean(GDP_growth))%>%summarize(`mean_diff:`=diff(means))
+```
+
+```{R}
+mean(b< -3.073186)*2
+```
+
+*Since the calculated p-value is less than 0.05, the test is significant and we can reject the null hypothesis - there has been a significant difference in GDP growth between India and China. Specifically, China's GDP has grown at a rate approximately 3% less than that of India. This disparity is represented visually by the plot below.*
+
+```{R}
+hist(b, main="",ylab=""); abline(v = -3.073186,col="red")
+```
+
+# Part 3 - Linear Regression Model
+
+*This linear regression model will be used to predict whether mean GDP growth (computed with all data for each country) differs across different levels of population and values for mean GDP per capita. For this test, the population variable is given a catergorical analog by placing each country into one of four quartiles based on their respective populations (once again, this is a mean value calculated across all years).*
+
+```{R}
+library(lmtest)
+library(sandwich)
+
+bank2 <- bank %>% group_by(Country) %>% summarize_at(3:5, mean, na.rm=T) %>% mutate("Pop_quartile" = as.factor(ntile(Pop, 4)))
+
+bankmod <- lm(GDP_growth ~ Pop_quartile*GDP_pc, data=bank2)
+summary(bankmod)
+```
+
+*For this model, the intercept coefficient represents the estimated average GDP growth (%) for a country in the first population quartile with a per-capita GDP of 0. Each of the Pop_quartile coefficients is the predicted increase (quartile 4) or decrease (quartiles 2/3) in GDP growth resulting from a country falling into each of the other three quartiles. The GDP_pc coefficient is the predicted decrease in GDP growth per dollar increase in GDP per capita. Finally, each of the interaction coefficients are the predicted increase (quartile 2) or decrease (quartiles 3/4) in the effect of GDP per capita on GDP growth based on a country's population quartile.*
+
+```{R}
+bank2 %>% ggplot(aes(x=GDP_pc, y=GDP_growth, color=Pop_quartile)) +
+  geom_point() +
+  geom_smooth(method=lm) +
+  ggtitle("Linear Regression - Effects of GDP Per-Capita and Population Size on GDP Growth")
+```
+
+```{R}
+plot(bankmod, 1) #Linearity
+```
+
+*Based on the plot of residuals vs fitted values, there is significant clustering that could violate the linearity assumption. While no obvious nonlinear patterns appear, the spread of variance increases near the center of the cluster. Regardless, it certainly isn't a random scatter of points.*
+
+```{R}
+plot(bankmod, 2) #Normality
+```
+
+*The QQ plot is roughly linear through the middle section but curves at the tails, indicating the presence of more extreme values than expected from a normal distribution. Normality is also questionable for this dataset.*
+
+```{R}
+bptest(bankmod) #Homoskedasticity
+```
+
+*Based on the Breusch-Pagan test results, homoskedasticity is satisfied - the p-value of 0.1442 is larger than 0.05 and is not sufficient to reject the null hypothesis.*
+
+```{R}
+coeftest(bankmod, vcov=vcovHC(bankmod)) #Robust SEs
+```
+
+*After utilizing robust standard errors, there are several changes to the results of the regression - a larger standard error for the interaction between population quartile #2 and GDP per capita negates the significance of the interaction coefficient, while a smaller standard error has the opposite effect for the interaction between population quartile #4 and GDP per capita.*
+
+*The multiple r-squared value from the original model is 0.06722, meaning that 6.722% of the variation in GDP growth can be explained by variation in GDP per capita, population quartile, and their interatctions.*
+
+# Part 4 - Bootstrapped Standard Errors
+
+```{R}
+RNGkind(sample.kind="Rounding")
+set.seed(348)
+
+samp_distn<-replicate(5000, {
+  boot_dat<-bank2[sample(nrow(bank2),replace=TRUE),]
+  fit<-lm(GDP_growth ~ Pop_quartile*GDP_pc, data=boot_dat)
+  coef(fit)
+})
+
+samp_distn%>%t%>%as.data.frame%>%summarize_all(sd)
+```
+
+```{R}
+coeftest(bankmod, vcov=vcovHC(bankmod))
+```
+
+```{R}
+sqrt(diag(vcov(bankmod)))%>%t%>%as.data.frame
+```
+
+*When comparing the standard error values across each of the three methods used, every standard error estimate from both the coeftest() output and boostrapping output is larger than its corresponding value from the original model except for the interactions between per-capita GDP and the 3rd/4th population quartiles. This discrepancy has an impact on p-values for the test - for the coeftest() and bootstrapping outputs, the interaction between population quartile 4 and per-capita GDP is significant instead of the interaction betwen population quartile 2 and per-capita GDP found in the original model.*
+
+*Between the bootstrapping/coeftest() outputs, standard errors are very similar with neither one displaing consistently higher or lower values across the board. With respect to the bootstrapping output, the only major difference is a significantly smaller standard error for the interaction between population quartile 2 and per-capita GDp, which could confer significance on that interaction.* 
+
+# Part 5 - Logistic Regression
+
+```{R}
+bank3 <- bank2 %>% mutate("Wealthy" = ifelse(GDP_pc>median(GDP_pc),1,0))
+bankmod1 <- glm(Wealthy~Pop+GDP_growth, data=bank3, family="binomial")
+summary(bankmod1)
+exp(coef(bankmod1))
+```
+
+*The exponentiated intercept coefficient for this model represents the predicted odds of falling under the "Wealthy" designation (mean GDP per capita larger than the median) for a country with a mean population size and mean GDP growth of 0. The exponentiated population coefficient predicts no change in the odds of a country being "Wealthy" per unit increase in population. The exponentiated GDP growth coefficient predicts a ~7% decrease in the odds of a country being "Wealthy" per unit increase in mean GDP growth.* 
+
+```{R}
+probs <- predict(bankmod1, type="response")
+pred <- ifelse(probs>0.5,1,0)
+table(prediction=pred, truth=bank3$Wealthy) %>% addmargins
+```
+
+```{R}
+class_diag(probs, bank3$Wealthy)
+```
+
+*Specificity and recall are all relatively low for this model - this is clear based on the poor classification performance for non-wealthy countries. The model does a better job for wealthy countries as evidenced by a higher value for sensitivity. Despite this slight improvement, overall accuracy remains low, and this is reflected by the calculated AUC.*
+
+```{R}
+bank3$logit <- predict(bankmod1)
+bank3 <- bank3 %>% mutate(Outcome=ifelse(GDP_pc>median(GDP_pc),"Wealthy", "Non-wealthy"))
+bank3$Outcome <- factor(bank3$Outcome, levels=c("Wealthy", "Non-wealthy"))
+
+bank3 %>% ggplot(aes(logit, fill=Outcome))+
+  geom_density(alpha=.3) +
+  geom_vline(xintercept=0,lty=2) +
+  ggtitle("Density of Log-odds by Outcome")
+```
+
+```{R}
+library(plotROC)
+bankplot <- bank3 %>% ggplot() +
+  geom_roc(aes(d=Wealthy,m=probs), n.cuts=0)
+bankplot
+```
+
+```{R}
+calc_auc(bankplot)
+```
+
+*The AUC of 0.5974 for this model falls within the "poor" range - a value of ~0.6 indicates that for a pair of two observations where one is wealthy and the other is not, there is a roughly 60% chance that the predicted probability of being wealthy is higher for the wealthy observation.*
+
+```{R}
+#10-fold CV
+
+set.seed(1234)
+k=10
+
+data <- bank3 %>% sample_frac
+folds <- ntile(1:nrow(bank3), n=10)
+
+diags<-NULL
+for(i in 1:k){
+  train<-data[folds!=i,] 
+  test<-data[folds==i,]
+  truth<-test$Wealthy
+  
+  fit<-glm(Wealthy~Pop+GDP_growth,data=train,family="binomial")
+  prob<-predict(fit,newdata = test,type="response")
+  
+  diags<-rbind(diags,class_diag(prob,truth))
+}
+
+summarize_all(diags,mean)
+```
+
+# Part 6 - Prediction w/LASSO 
+
+```{R}
+library(glmnet)
+set.seed(1234)
+
+bankmod2 <- glm(Wealthy ~ -1 + GDP_growth + Pop + Pop_quartile, data=bank3, family="binomial") #Country and GDP_pc don't make sense as predictors
+
+predictors <- model.matrix(bankmod2)
+response <- bank3 %>% select(Wealthy) %>% as.matrix
+
+cv <- cv.glmnet(predictors, response, family="binomial")
+lasso1<-glmnet(predictors, response, lambda = cv$lambda.1se, family="binomial")
+coef(lasso1)
+```
+
+*Based on the results of this LASSO, GDP growth is the only significant predictor of the "Wealthy" designation. This could be ascribed to the fact that GDP growth is also a GDP-based indicator, whereas population represents a separate catergory of information.*
+
+```{R}
+
+set.seed(1234)
+k=10
+
+data <- bank3 %>% sample_frac
+folds <- ntile(1:nrow(bank3), n=10)
+
+diags<-NULL
+for(i in 1:k){
+  train<-data[folds!=i,] 
+  test<-data[folds==i,]
+  truth<-test$Wealthy
+  
+  fit<-glm(Wealthy~GDP_growth,data=train,family="binomial")
+  prob<-predict(fit,newdata = test,type="response")
+  
+  diags<-rbind(diags,class_diag(prob,truth))
+}
+
+summarize_all(diags,mean)
+```
+
+*This model has an AUC of 0.6178 for out-of-sample prediction, which is a slight improvement over the out-of-sample AUC of 0.5962 for the model from part 5.*

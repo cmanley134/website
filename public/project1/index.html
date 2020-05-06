@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Carson Manley" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 1 - Analysis of Global GDP and Population Data</title>
+    <meta name="generator" content="Hugo 0.69.2" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project1/">Project 1 - Analysis of Global GDP and Population Data</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="carson-manley" class="section level3">
+<h3>Carson Manley</h3>
+</div>
+<div id="cwm2477" class="section level3">
+<h3>cwm2477</h3>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p><em>The three datasets selected for this project were pulled from World Bank Open Data, a source for financial and demographic records spanning the entire globe. I chose to examine worldwide data for population, percent GDP growth and per-capita GDP. Observations range from 1961-2018, although data was not collected until relatively recently for some countries. If population has some bearing on the size of a country’s economy, there may be an inverse relationship between population and percent GDP growth. Smaller economies may grow faster than larger ones if they are far below their maximum potential. Per capita GDP will show an increase with increasing year, but year is almost pseudo-catergorical in this context. Otherwise, it seems unlikely that the other numeric variables in the joined dataset will share significant relationships over long timescales</em></p>
+<p><em>Joining these datasets allows for direct comparison between important indicators for national health. I believe that many of us know less about the relative size and power of the world’s countries than we would like to, and these comparisons will aid in enhancing that base of knowledge</em></p>
+</div>
+<div id="joining" class="section level1">
+<h1>Joining</h1>
+<p><em>A full join was selected for these data because each indicator has certain years during which it was measured for a particular country. As such, some values could be lost if that year range was not consistent across all three indicators. A full join inherenetly preserves all observations, so no rows were dropped during the joining process. The join itself was quite simple - percent GDP growth and population were read in as “GDP” and “POP” and then full joined to one another - the resulting data frame was then full joined to GDP per capita.</em></p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
+## ✓ tibble  2.1.3     ✓ dplyr   0.8.3
+## ✓ tidyr   1.0.2     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(readr)
+GDP &lt;- read_csv(&quot;GDP.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   .default = col_double(),
+##   `Country Name` = col_character(),
+##   `Country Code` = col_character(),
+##   `Indicator Name` = col_character(),
+##   `Indicator Code` = col_character()
+## )</code></pre>
+<pre><code>## See spec(...) for full column specifications.</code></pre>
+<pre class="r"><code>POP &lt;- read_csv(&quot;POP.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   .default = col_double(),
+##   `Country Name` = col_character(),
+##   `Country Code` = col_character(),
+##   `Indicator Name` = col_character(),
+##   `Indicator Code` = col_character()
+## )
+## See spec(...) for full column specifications.</code></pre>
+<pre class="r"><code>GDP_per_capita &lt;- read_csv(&quot;GDP_per_capita.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   .default = col_double(),
+##   `Country Name` = col_character(),
+##   `Country Code` = col_character(),
+##   `Indicator Name` = col_character(),
+##   `Indicator Code` = col_character()
+## )
+## See spec(...) for full column specifications.</code></pre>
+<pre class="r"><code>firsttwo &lt;- GDP %&gt;% full_join(POP)</code></pre>
+<pre><code>## Joining, by = c(&quot;Country Name&quot;, &quot;Country Code&quot;, &quot;Indicator Name&quot;, &quot;Indicator Code&quot;, &quot;1961&quot;, &quot;1962&quot;, &quot;1963&quot;, &quot;1964&quot;, &quot;1965&quot;, &quot;1966&quot;, &quot;1967&quot;, &quot;1968&quot;, &quot;1969&quot;, &quot;1970&quot;, &quot;1971&quot;, &quot;1972&quot;, &quot;1973&quot;, &quot;1974&quot;, &quot;1975&quot;, &quot;1976&quot;, &quot;1977&quot;, &quot;1978&quot;, &quot;1979&quot;, &quot;1980&quot;, &quot;1981&quot;, &quot;1982&quot;, &quot;1983&quot;, &quot;1984&quot;, &quot;1985&quot;, &quot;1986&quot;, &quot;1987&quot;, &quot;1988&quot;, &quot;1989&quot;, &quot;1990&quot;, &quot;1991&quot;, &quot;1992&quot;, &quot;1993&quot;, &quot;1994&quot;, &quot;1995&quot;, &quot;1996&quot;, &quot;1997&quot;, &quot;1998&quot;, &quot;1999&quot;, &quot;2000&quot;, &quot;2001&quot;, &quot;2002&quot;, &quot;2003&quot;, &quot;2004&quot;, &quot;2005&quot;, &quot;2006&quot;, &quot;2007&quot;, &quot;2008&quot;, &quot;2009&quot;, &quot;2010&quot;, &quot;2011&quot;, &quot;2012&quot;, &quot;2013&quot;, &quot;2014&quot;, &quot;2015&quot;, &quot;2016&quot;, &quot;2017&quot;, &quot;2018&quot;)</code></pre>
+<pre class="r"><code>gdppop &lt;- firsttwo %&gt;% full_join(GDP_per_capita) %&gt;% glimpse</code></pre>
+<pre><code>## Joining, by = c(&quot;Country Name&quot;, &quot;Country Code&quot;, &quot;Indicator Name&quot;, &quot;Indicator Code&quot;, &quot;1961&quot;, &quot;1962&quot;, &quot;1963&quot;, &quot;1964&quot;, &quot;1965&quot;, &quot;1966&quot;, &quot;1967&quot;, &quot;1968&quot;, &quot;1969&quot;, &quot;1970&quot;, &quot;1971&quot;, &quot;1972&quot;, &quot;1973&quot;, &quot;1974&quot;, &quot;1975&quot;, &quot;1976&quot;, &quot;1977&quot;, &quot;1978&quot;, &quot;1979&quot;, &quot;1980&quot;, &quot;1981&quot;, &quot;1982&quot;, &quot;1983&quot;, &quot;1984&quot;, &quot;1985&quot;, &quot;1986&quot;, &quot;1987&quot;, &quot;1988&quot;, &quot;1989&quot;, &quot;1990&quot;, &quot;1991&quot;, &quot;1992&quot;, &quot;1993&quot;, &quot;1994&quot;, &quot;1995&quot;, &quot;1996&quot;, &quot;1997&quot;, &quot;1998&quot;, &quot;1999&quot;, &quot;2000&quot;, &quot;2001&quot;, &quot;2002&quot;, &quot;2003&quot;, &quot;2004&quot;, &quot;2005&quot;, &quot;2006&quot;, &quot;2007&quot;, &quot;2008&quot;, &quot;2009&quot;, &quot;2010&quot;, &quot;2011&quot;, &quot;2012&quot;, &quot;2013&quot;, &quot;2014&quot;, &quot;2015&quot;, &quot;2016&quot;, &quot;2017&quot;, &quot;2018&quot;)</code></pre>
+<pre><code>## Observations: 792
+## Variables: 63
+## $ `Country Name`   &lt;chr&gt; &quot;Aruba&quot;, &quot;Afghanistan&quot;, &quot;Angola&quot;, &quot;Albania&quot;, &quot;Andorr…
+## $ `Country Code`   &lt;chr&gt; &quot;ABW&quot;, &quot;AFG&quot;, &quot;AGO&quot;, &quot;ALB&quot;, &quot;AND&quot;, &quot;ARB&quot;, &quot;ARE&quot;, &quot;AR…
+## $ `Indicator Name` &lt;chr&gt; &quot;GDP growth (annual %)&quot;, &quot;GDP growth (annual %)&quot;, &quot;G…
+## $ `Indicator Code` &lt;chr&gt; &quot;NY.GDP.MKTP.KD.ZG&quot;, &quot;NY.GDP.MKTP.KD.ZG&quot;, &quot;NY.GDP.MK…
+## $ `1961`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 5.427843, NA, NA, NA, 2.…
+## $ `1962`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, -0.8520215, NA, NA, NA, …
+## $ `1963`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, -5.3081968, NA, NA, NA, …
+## $ `1964`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 10.130298, NA, NA, NA, 6…
+## $ `1965`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 10.569433, NA, NA, NA, 5…
+## $ `1966`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, -0.6597262, NA, NA, NA, …
+## $ `1967`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 3.191997, NA, NA, NA, 6.…
+## $ `1968`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 4.8225008, NA, NA, NA, 5…
+## $ `1969`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 9.679526, NA, NA, NA, 7.…
+## $ `1970`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 3.0456433, NA, NA, NA, 7…
+## $ `1971`           &lt;dbl&gt; NA, NA, NA, NA, 4.649465, NA, NA, 5.658131, NA, NA, …
+## $ `1972`           &lt;dbl&gt; NA, NA, NA, NA, 8.149743, NA, NA, 1.628417, NA, NA, …
+## $ `1973`           &lt;dbl&gt; NA, NA, NA, NA, 7.7884672, NA, NA, 2.8117540, NA, NA…
+## $ `1974`           &lt;dbl&gt; NA, NA, NA, NA, 5.6187897, NA, NA, 5.5338044, NA, NA…
+## $ `1975`           &lt;dbl&gt; NA, NA, NA, NA, 0.5422057, NA, NA, -0.0284121, NA, N…
+## $ `1976`           &lt;dbl&gt; NA, NA, NA, NA, 3.30378705, 15.82066466, 16.52685651…
+## $ `1977`           &lt;dbl&gt; NA, NA, NA, NA, 2.8385756, 8.2371949, 21.4393302, 6.…
+## $ `1978`           &lt;dbl&gt; NA, NA, NA, NA, 1.4630002, -0.6605291, -1.5896033, -…
+## $ `1979`           &lt;dbl&gt; NA, NA, NA, NA, 0.0415572, 11.5330034, 20.9235731, 1…
+## $ `1980`           &lt;dbl&gt; NA, NA, NA, NA, 2.2087276, 9.1402528, 23.8747749, 1.…
+## $ `1981`           &lt;dbl&gt; NA, NA, -4.4000012, 5.7456353, -0.1324745, 2.9180579…
+## $ `1982`           &lt;dbl&gt; NA, NA, 0.00000000, 2.94859680, 1.24646111, -9.07078…
+## $ `1983`           &lt;dbl&gt; NA, NA, 4.2000014, 1.1049383, 1.7701183, -6.8365647,…
+## $ `1984`           &lt;dbl&gt; NA, NA, 6.00000216, -1.25159664, 1.78468669, 1.37096…
+## $ `1985`           &lt;dbl&gt; NA, NA, 3.499999, 1.780644, 2.321433, -2.290811, -3.…
+## $ `1986`           &lt;dbl&gt; NA, NA, 2.900002, 5.637243, 3.253322, 4.705735, -14.…
+## $ `1987`           &lt;dbl&gt; 16.0784314, NA, 4.0827486, -0.7878427, 5.5471222, -0…
+## $ `1988`           &lt;dbl&gt; 18.648649, NA, 6.128890, -1.420040, 5.094326, 5.6053…
+## $ `1989`           &lt;dbl&gt; 12.12984055, NA, 0.04162146, 9.83654897, 4.82703424,…
+## $ `1990`           &lt;dbl&gt; 3.9614017, NA, -3.4500987, -9.5756402, 3.7813876, 13…
+## $ `1991`           &lt;dbl&gt; 7.9628725, NA, 0.9913593, -28.0021417, 2.5460029, 1.…
+## $ `1992`           &lt;dbl&gt; 5.88235294, NA, -5.83828073, -7.18711092, 0.92921196…
+## $ `1993`           &lt;dbl&gt; 7.3076923, NA, -23.9834174, 9.5594117, -1.0314840, 3…
+## $ `1994`           &lt;dbl&gt; 8.2039028, NA, 1.3393634, 8.3028666, 2.3831877, 3.20…
+## $ `1995`           &lt;dbl&gt; 2.5471427, NA, 15.0000000, 13.3223333, 2.7574992, 2.…
+## $ `1996`           &lt;dbl&gt; 1.1857900, NA, 13.5443698, 9.0999994, 4.6497401, 4.5…
+## $ `1997`           &lt;dbl&gt; 7.046872, NA, 7.274277, -10.919984, 9.067672, 4.2563…
+## $ `1998`           &lt;dbl&gt; 1.9919884, NA, 4.6911465, 8.8300877, 3.1947903, 5.26…
+## $ `1999`           &lt;dbl&gt; 1.238039, NA, 2.181490, 12.889897, 4.099081, 1.79551…
+## $ `2000`           &lt;dbl&gt; 7.6165897, NA, 3.0546242, 6.9500361, 3.5283613, 5.47…
+## $ `2001`           &lt;dbl&gt; -2.971257, NA, 4.205999, 8.290070, 4.546768, 1.58442…
+## $ `2002`           &lt;dbl&gt; -3.2736469, NA, 13.6656865, 4.5399606, 6.4710147, 0.…
+## $ `2003`           &lt;dbl&gt; 1.9755473, 8.8322778, 2.9898500, 5.5300508, 12.16871…
+## $ `2004`           &lt;dbl&gt; 7.9115647, 1.4141180, 10.9528618, 5.5099987, 7.64786…
+## $ `2005`           &lt;dbl&gt; 1.2143488, 11.2297148, 15.0289153, 5.5299148, 7.3969…
+## $ `2006`           &lt;dbl&gt; 1.050607, 5.357403, 11.547683, 5.900084, 4.536353, 6…
+## $ `2007`           &lt;dbl&gt; 1.80022585, 13.82631954, 14.01001824, 5.97998204, 0.…
+## $ `2008`           &lt;dbl&gt; -0.09070775, 3.92498382, 11.16613833, 7.49996956, -8…
+## $ `2009`           &lt;dbl&gt; -10.5197476, 21.3905284, 0.8587126, 3.3500674, -3.69…
+## $ `2010`           &lt;dbl&gt; -3.6850296, 14.3624415, 4.8592196, 3.7068914, -5.358…
+## $ `2011`           &lt;dbl&gt; 3.4460548, 0.4263548, 3.4719814, 2.5453227, -4.64654…
+## $ `2012`           &lt;dbl&gt; -1.36986301, 12.75228708, 8.54214734, 1.41752441, -1…
+## $ `2013`           &lt;dbl&gt; 4.19823232, 5.60074466, 4.95459048, 1.00198871, 0.35…
+## $ `2014`           &lt;dbl&gt; 0.8482278, 2.7245434, 4.8226255, 1.7744868, 2.277683…
+## $ `2015`           &lt;dbl&gt; -0.4505858, 1.4513147, 0.9435756, 2.2187515, 0.84220…
+## $ `2016`           &lt;dbl&gt; -0.2112251, 2.2603142, -2.5800972, 3.3148048, 1.8891…
+## $ `2017`           &lt;dbl&gt; 1.33051104, 2.66529205, -0.14720743, 3.82108142, 1.7…
+## $ `2018`           &lt;dbl&gt; NA, 1.030660, -2.133493, 4.145238, 1.629345, 2.04597…
+## $ `1960`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …</code></pre>
+<p><em>Subsequently, tidying was needed to sort out the jumbled output of the full join. Each year had its own column in the initial output, so these years were pivoted longer to “year”, while the values for each indicator were pivoted to “value”. The “Indicator Code” column was redundant and had to be removed in order to facilitate pivoting wider - this was performed using select. Finally, each indicator was pivoted to its own column using pivot wider, and NA values were dropped with drop_na. The dataset was cut down from 15576 to 9301 rows, representing a drop of 6275 cases; this means that any row not containing an observation for all three indicators was removed.</em></p>
+<pre class="r"><code>tidy1 &lt;- gdppop %&gt;% pivot_longer(5:63, names_to=&quot;year&quot;, values_to=&quot;value&quot;) %&gt;% 
+  select(!`Indicator Code`) %&gt;%
+  pivot_wider(names_from = &quot;Indicator Name&quot;, values_from = &quot;value&quot;) %&gt;%
+  drop_na()
+glimpse(tidy1) </code></pre>
+<pre><code>## Observations: 9,301
+## Variables: 6
+## $ `Country Name`                  &lt;chr&gt; &quot;Aruba&quot;, &quot;Aruba&quot;, &quot;Aruba&quot;, &quot;Aruba&quot;, &quot;…
+## $ `Country Code`                  &lt;chr&gt; &quot;ABW&quot;, &quot;ABW&quot;, &quot;ABW&quot;, &quot;ABW&quot;, &quot;ABW&quot;, &quot;A…
+## $ year                            &lt;chr&gt; &quot;1987&quot;, &quot;1988&quot;, &quot;1989&quot;, &quot;1990&quot;, &quot;1991…
+## $ `GDP growth (annual %)`         &lt;dbl&gt; 16.07843137, 18.64864865, 12.12984055…
+## $ `Population, total`             &lt;dbl&gt; 61833, 61079, 61032, 62149, 64622, 68…
+## $ `GDP per capita (constant LCU)` &lt;dbl&gt; 23935.44, 28749.65, 32261.76, 32936.9…</code></pre>
+</div>
+<div id="summary-statistics" class="section level1">
+<h1>Summary Statistics</h1>
+<p><em>For the initial use of dplyr functions, I was hoping to get a more accurate picture of the dataset before diving into summary statistics. I began by grouping the data by country and finding the mean for each variable, representing the overall average across all years for a particular country. Next, I compared the number of observations smaller than the mean and median of the population variable. A larger number of observations fall below the mean than below the median, which indicates a right skew of the data. Finally, I defined a z-score function and computed a z-score for each of the country means from the first summary table.</em></p>
+<pre class="r"><code>tidy2 &lt;- tidy1 %&gt;% group_by(`Country Name`) %&gt;% summarize_at(c(&quot;GDP growth (annual %)&quot;, &quot;Population, total&quot;, &quot;GDP per capita (constant LCU)&quot;), mean, na.rm=T)
+glimpse(tidy2)</code></pre>
+<pre><code>## Observations: 212
+## Variables: 4
+## $ `Country Name`                  &lt;chr&gt; &quot;Afghanistan&quot;, &quot;Albania&quot;, &quot;Algeria&quot;, …
+## $ `GDP growth (annual %)`         &lt;dbl&gt; 6.828081, 2.972107, 3.746276, -1.1628…
+## $ `Population, total`             &lt;dbl&gt; 30192668.88, 3020834.29, 25244940.07,…
+## $ `GDP per capita (constant LCU)` &lt;dbl&gt; 11903.165, 288758.128, 107483.486, 11…</code></pre>
+<pre class="r"><code>tidy3 &lt;- tidy1 %&gt;% filter(`Population, total`&lt; mean(`Population, total`, na.rm=T))
+tidy4 &lt;- tidy1 %&gt;% filter(`Population, total`&lt; median(`Population, total`, na.rm=T))
+nrow(tidy3)</code></pre>
+<pre><code>## [1] 7649</code></pre>
+<pre class="r"><code>nrow(tidy4)</code></pre>
+<pre><code>## [1] 4650</code></pre>
+<pre class="r"><code>zscore = function(x, na.rm=T){(x-mean(x, na.rm=T))/sd(x, na.rm=T)}
+tidy5 &lt;- tidy2 %&gt;% mutate(&quot;zGDP_growth&quot; = zscore(`GDP growth (annual %)`), &quot;zPop&quot; = zscore(`Population, total`), &quot;zGDP&quot; = zscore(`GDP per capita (constant LCU)`)) %&gt;% 
+  rename(&quot;Mean_GDP_growth&quot; = `GDP growth (annual %)`, &quot;Mean_Pop&quot; = `Population, total`)
+glimpse(tidy5)</code></pre>
+<pre><code>## Observations: 212
+## Variables: 7
+## $ `Country Name`                  &lt;chr&gt; &quot;Afghanistan&quot;, &quot;Albania&quot;, &quot;Algeria&quot;, …
+## $ Mean_GDP_growth                 &lt;dbl&gt; 6.828081, 2.972107, 3.746276, -1.1628…
+## $ Mean_Pop                        &lt;dbl&gt; 30192668.88, 3020834.29, 25244940.07,…
+## $ `GDP per capita (constant LCU)` &lt;dbl&gt; 11903.165, 288758.128, 107483.486, 11…
+## $ zGDP_growth                     &lt;dbl&gt; 1.388321967, -0.377596063, -0.0230502…
+## $ zPop                            &lt;dbl&gt; 0.050416683, -0.222376525, 0.00074367…
+## $ zGDP                            &lt;dbl&gt; -0.189704725, -0.139923193, -0.172518…</code></pre>
+<p><em>I also grouped the summary statistics by country and computed the mean, median, standard deviation, variance, minimum and maximum value for each of the three numeric variables.</em></p>
+<pre class="r"><code>tidy6 &lt;- tidy1 %&gt;% rename(&quot;GDP growth&quot; = `GDP growth (annual %)`, &quot;Pop&quot; = `Population, total`, &quot;GDP per capita&quot; = `GDP per capita (constant LCU)`) %&gt;%
+  group_by(`Country Name`) %&gt;%
+  mutate(&quot;Mean_growth&quot; = mean(`GDP growth`), &quot;Median_growth&quot; = median(`GDP growth`), &quot;SD_growth&quot; = sd(`GDP growth`), 
+         &quot;Var_growth&quot; = var(`GDP growth`), &quot;Min_growth&quot; = min(`GDP growth`), &quot;Max_growth&quot; = max(`GDP growth`)) %&gt;%
+  mutate(&quot;Mean_GDP&quot; = mean(`GDP per capita`), &quot;Median_GDP&quot; = median(`GDP per capita`), &quot;SD_GDP&quot; = sd(`GDP per capita`), 
+         &quot;Var_GDP&quot; = var(`GDP per capita`), &quot;Min_GDP&quot; = min(`GDP per capita`), &quot;Max_GDP&quot; = max(`GDP per capita`)) %&gt;%
+  mutate(&quot;Mean_Population&quot; = mean(Pop), &quot;Median_Population&quot; = median(Pop), &quot;SD_Population&quot; = sd(Pop), 
+         &quot;Var_Population&quot; = var(Pop), &quot;Min_Population&quot; = min(Pop), &quot;Max_Population&quot; = max(Pop)) %&gt;%
+  select(!2:6) %&gt;% distinct()
+glimpse(tidy6)</code></pre>
+<pre><code>## Observations: 212
+## Variables: 19
+## Groups: Country Name [212]
+## $ `Country Name`    &lt;chr&gt; &quot;Aruba&quot;, &quot;Afghanistan&quot;, &quot;Angola&quot;, &quot;Albania&quot;, &quot;Andor…
+## $ Mean_growth       &lt;dbl&gt; 3.322736, 6.828081, 3.800455, 2.972107, 2.621715, 4…
+## $ Median_growth     &lt;dbl&gt; 1.97554729, 4.64119354, 3.79137406, 3.98315968, 2.4…
+## $ SD_growth         &lt;dbl&gt; 5.821983, 6.198046, 7.172204, 7.344601, 3.746665, 7…
+## $ Var_growth        &lt;dbl&gt; 33.895484, 38.415770, 51.440506, 53.943159, 14.0374…
+## $ Min_growth        &lt;dbl&gt; -10.5197476, 0.4263548, -23.9834174, -28.0021417, -…
+## $ Max_growth        &lt;dbl&gt; 18.648649, 21.390528, 15.028915, 13.322333, 12.1687…
+## $ Mean_GDP          &lt;dbl&gt; 33194.558, 11903.165, 44706.894, 288758.128, 23412.…
+## $ Median_GDP        &lt;dbl&gt; 33885.149, 13079.884, 45051.987, 225025.587, 23717.…
+## $ SD_GDP            &lt;dbl&gt; 2559.6900, 2426.3690, 9484.5814, 120359.4836, 2576.…
+## $ Var_GDP           &lt;dbl&gt; 6.552013e+06, 5.887266e+06, 8.995728e+07, 1.448641e…
+## $ Min_GDP           &lt;dbl&gt; 23935.4390, 8131.1086, 26939.3985, 129256.2855, 190…
+## $ Max_GDP           &lt;dbl&gt; 36911.054, 14337.684, 59973.648, 527934.671, 29006.…
+## $ Mean_Population   &lt;dbl&gt; 89051.45, 30192668.88, 17452438.55, 3020834.29, 585…
+## $ Median_Population &lt;dbl&gt; 94992.0, 29651460.0, 16131171.0, 3017061.0, 63263.5…
+## $ SD_Population     &lt;dbl&gt; 15508.158, 4266226.288, 6579600.217, 145304.709, 19…
+## $ Var_Population    &lt;dbl&gt; 2.405030e+08, 1.820069e+13, 4.329114e+13, 2.111346e…
+## $ Min_Population    &lt;dbl&gt; 61032, 23680871, 8640446, 2726056, 25559, 637922, 2…
+## $ Max_Population    &lt;dbl&gt; 105366, 37172386, 30809762, 3286542, 84463, 9630959…</code></pre>
+<p><em>Finally, I computed overall summary statistics for the dataset - each statistic was computed using summarize and then bound into a data frame with rbind and cbind.</em></p>
+<pre class="r"><code>Mean &lt;- tidy1 %&gt;% summarize_at(4:6,mean,na.rm=T)
+SD &lt;- tidy1 %&gt;% summarize_at(4:6,sd,na.rm=T)
+Var &lt;- tidy1 %&gt;% summarize_at(4:6,var,na.rm=T)
+Min &lt;- tidy1 %&gt;% summarize_at(4:6,min,na.rm=T)
+Median &lt;- tidy1 %&gt;% summarize_at(4:6,median,na.rm=T)
+Max &lt;- tidy1 %&gt;% summarize_at(4:6,max,na.rm=T)
+Count &lt;- tidy1 %&gt;% summarize_at(4:6,length)
+Unique &lt;- tidy1 %&gt;% summarize_at(4:6,n_distinct)
+
+Stats1 &lt;- as.data.frame(rbind(Mean, SD, Var, Min, Median, Max, Count, Unique))
+Names &lt;- as.data.frame(rbind(&quot;Mean&quot;, &quot;SD&quot;, &quot;Var&quot;, &quot;Min&quot;, &quot;Median&quot;, &quot;Max&quot;, &quot;Count&quot;, &quot;Unique&quot;))
+Stats &lt;- cbind(Names, Stats1) %&gt;% rename(&quot;Indicator&quot;=V1)
+Stats</code></pre>
+<pre><code>##   Indicator GDP growth (annual %) Population, total
+## 1      Mean              3.854043      3.066870e+07
+## 2        SD              6.305825      1.171349e+08
+## 3       Var             39.763431      1.372058e+16
+## 4       Min            -64.047107      9.026000e+03
+## 5    Median              3.849493      5.545651e+06
+## 6       Max            149.972963      1.392730e+09
+## 7     Count           9301.000000      9.301000e+03
+## 8    Unique           9289.000000      9.278000e+03
+##   GDP per capita (constant LCU)
+## 1                  1.224123e+06
+## 2                  6.591924e+06
+## 3                  4.345347e+13
+## 4                  2.335543e+02
+## 5                  3.461069e+04
+## 6                  1.313520e+08
+## 7                  9.301000e+03
+## 8                  9.301000e+03</code></pre>
+<p><em>Overall, we can see that the SD/variance are high for all three numeric variables, but especially for total population. A quick look at the population z-scores (shown below) reveals that China and India possess far larger populations than any other nations - these two values contribute significantly to the spread of the population variable. For the GDP growth variable, we see that the mean is positive - this is sensible because GDP must increase over time in order to counteract inflation pressures. The mean and median of the GDP growth variable are extremely similar, indicating that it is not skewed. Finally, GDP per capita is the only variable that possesses a unique value for all 9301 observations. It also has a median that is more than two orders of magnitude smaller than its mean; this indicates a significant right skew.</em></p>
+<pre class="r"><code>tidy5 %&gt;% arrange(desc(zPop)) %&gt;% slice(1:10) %&gt;% select(`Country Name`, zPop)</code></pre>
+<pre><code>## # A tibble: 10 x 2
+##    `Country Name`       zPop
+##    &lt;chr&gt;               &lt;dbl&gt;
+##  1 China              10.7  
+##  2 India               8.58 
+##  3 United States       2.30 
+##  4 Indonesia           1.53 
+##  5 Russian Federation  1.21 
+##  6 Brazil              1.21 
+##  7 Japan               0.936
+##  8 Pakistan            0.890
+##  9 Bangladesh          0.787
+## 10 Nigeria             0.776</code></pre>
+</div>
+<div id="visualizations" class="section level1">
+<h1>Visualizations</h1>
+<p><em>To begin, a correlation matrix was computed for the three numeric variables using cor(). Due to their extensive spread, z-scores were used in place of actual values. Despite this, none of the variables appear to have a strong relationship.</em></p>
+<pre class="r"><code>tidycor &lt;- tidy5 %&gt;% select(5:7) %&gt;% cor()
+tidycor</code></pre>
+<pre><code>##             zGDP_growth       zPop       zGDP
+## zGDP_growth   1.0000000 0.13566818 0.10169290
+## zPop          0.1356682 1.00000000 0.03867681
+## zGDP          0.1016929 0.03867681 1.00000000</code></pre>
+<p><em>This correlation matrix was used to create a correlation heatmap for the data.The dark colors indicate weak correlations between the three numeric variables.</em></p>
+<pre class="r"><code>corframe &lt;- tidycor %&gt;% as.data.frame() %&gt;%
+  rownames_to_column%&gt;%
+  pivot_longer(-1,names_to=&quot;name&quot;,values_to=&quot;correlation&quot;)
+corframe %&gt;% ggplot(aes(rowname, name, fill=correlation))+
+  geom_tile() +
+  geom_text(aes(label=round(correlation,3))) +
+  scale_fill_gradientn(colours = c(&quot;blue&quot;, &quot;green&quot;, &quot;red&quot;))</code></pre>
+<p><img src="/project1_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><em>The next plot visualizes the relationship between mean annual GDP growth and mean per-capita GDP grouped by country. A log scale was required to graph GDP per capita on a continuous y-axis - this demonstrates the extreme disparities between values for this variable across different nations.</em></p>
+<pre class="r"><code>library(ggplot2)
+tidy1 %&gt;% group_by(`Country Name`) %&gt;%
+  summarize_if(is.numeric, mean, na.rm=T) %&gt;%
+  mutate(&quot;Population Quartile&quot; = as.factor(ntile(`Population, total`, 4))) %&gt;%
+  ggplot(aes(x=`GDP growth (annual %)`, y=`GDP per capita (constant LCU)`, color=`Population Quartile`)) +
+  geom_point(stat=&quot;summary&quot;) +
+  scale_y_log10() +
+  theme_bw() +
+  ggtitle(&quot;Worldwide GDP Growth vs GDP Per Capita for Different Population Catergories&quot;) + 
+  theme(plot.title = element_text(size=10), axis.title = element_text(size=10), legend.title = element_text(size=10))</code></pre>
+<pre><code>## No summary function supplied, defaulting to `mean_se()</code></pre>
+<p><img src="/project1_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><em>The spread of GDP per capita appears to decrease with increasing population quartile, but spread for GDP growth demonstrates an opposite pattern. It is difficult to say why this is the case - perhaps larger countries are less prone to variation in individual standard of living over time, yet also show more discrepancies with respect to overall growth. The only population quartile that has some evidence of a pattern is the first, which exhibits a positive relationship between the two variables. The general cloud of points lacks any clear relation, which is consistent with the weak correlation shown by the correlation matrix.</em></p>
+<p><em>Lastly, I chose to show GDP growth as a function of time for Earth’s 10 current most populous countries. I initially filtered the data to determine their identities.</em></p>
+<pre class="r"><code>tidy1 %&gt;% filter(year==&quot;2018&quot;) %&gt;% arrange(desc(`Population, total`)) %&gt;% slice(1:10)</code></pre>
+<pre><code>## # A tibble: 10 x 6
+##    `Country Name` `Country Code` year  `GDP growth (an… `Population, to…
+##    &lt;chr&gt;          &lt;chr&gt;          &lt;chr&gt;            &lt;dbl&gt;            &lt;dbl&gt;
+##  1 China          CHN            2018             6.57        1392730000
+##  2 India          IND            2018             6.81        1352617328
+##  3 United States  USA            2018             2.93         327167434
+##  4 Indonesia      IDN            2018             5.17         267663435
+##  5 Pakistan       PAK            2018             5.83         212215030
+##  6 Brazil         BRA            2018             1.12         209469333
+##  7 Nigeria        NGA            2018             1.94         195874740
+##  8 Bangladesh     BGD            2018             7.86         161356039
+##  9 Russian Feder… RUS            2018             2.25         144478050
+## 10 Japan          JPN            2018             0.788        126529100
+## # … with 1 more variable: `GDP per capita (constant LCU)` &lt;dbl&gt;</code></pre>
+<p><em>GDP growth was then shown for each country across the entire time frame of the observations.</em></p>
+<pre class="r"><code>tidy1 %&gt;% filter(`Country Name`==c(&quot;China&quot;, &quot;India&quot;, &quot;United States&quot;, &quot;Indonesia&quot;, &quot;Pakistan&quot;, &quot;Brazil&quot;, &quot;Nigeria&quot;, &quot;Bangladesh&quot;, &quot;Russian Federation&quot;, &quot;Mexico&quot;)) %&gt;%
+  group_by(`Country Name`) %&gt;%
+  mutate(Year=as.numeric(year)) %&gt;%
+  ggplot(aes(x=Year, y=`GDP growth (annual %)`)) +
+  geom_line(aes(color=`Country Name`), size=1) + 
+  geom_point() + 
+  scale_x_continuous(breaks=seq(1960,2020,10)) +
+  theme_dark() +
+  ggtitle(&quot;GDP Growth for Earth&#39;s 10 Most Populous Countries (Current) from 1960-2018&quot;) + 
+  theme(plot.title = element_text(size=10), axis.title = element_text(size=10), legend.title = element_text(size=10))</code></pre>
+<pre><code>## Warning in `Country Name` == c(&quot;China&quot;, &quot;India&quot;, &quot;United States&quot;, &quot;Indonesia&quot;, :
+## longer object length is not a multiple of shorter object length</code></pre>
+<p><img src="/project1_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p><em>Every nation included exhibits positive GDP growth for the majority of the specified time period, which could be a factor in supporting their large populations. We can also see that nations such as India and the United States have experienced relatively smooth growth, while others such as China, Brazil, and Nigeria have seen more variation. The Russian Federation arrives late due to a lack of data from its time as the U.S.S.R. - conversely, Brazil, Indonesia, and Nigeria lack data more recent than 2010. This may be due to cases dropped from the removal of NAs.</em></p>
+</div>
+<div id="clustering" class="section level1">
+<h1>Clustering</h1>
+<p><em>In order to facilitate an accurate cluster analysis, an optimal silhouette width must be selected. The following plot shows that 2 clusters maximizes sillouhete width for the three selected variables.</em></p>
+<pre class="r"><code>library(cluster)
+tidy5_nums &lt;- tidy5 %&gt;% select(5:7)
+gower1&lt;-daisy(tidy5_nums,metric=&quot;gower&quot;)
+
+sil_width&lt;-vector()
+for(i in 2:10){  
+  pam_fit &lt;- pam(gower1, diss = TRUE, k = i)  
+  sil_width[i] &lt;- pam_fit$silinfo$avg.width  
+}
+
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name=&quot;k&quot;,breaks=1:10)</code></pre>
+<pre><code>## Warning: Removed 1 rows containing missing values (geom_path).</code></pre>
+<p><img src="/project1_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p><em>The following silhouette plot was generated after clustering via pam. The average width is 0.37, which indicates a weak structure.</em></p>
+<pre class="r"><code>pam &lt;- gower1 %&gt;% pam(k=2, diss=T)
+plot(pam, which=2)</code></pre>
+<p><img src="/project1_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p><em>The following multi-faceted plot shows how clusters were assigned based on the three numeric variables.</em></p>
+<pre class="r"><code>final&lt;-tidy5_nums%&gt;%mutate(cluster=as.factor(pam$clustering))
+library(GGally)</code></pre>
+<pre><code>## Registered S3 method overwritten by &#39;GGally&#39;:
+##   method from   
+##   +.gg   ggplot2</code></pre>
+<pre><code>## 
+## Attaching package: &#39;GGally&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     nasa</code></pre>
+<pre class="r"><code>ggpairs(final, columns=1:3, aes(color=cluster))</code></pre>
+<p><img src="/project1_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p><em>GDP growth exhibits the strongest correlation with the other two variables, indicating that it has the most control over the spread of the points. The scatterplots also distinguish GDP growth from the other two variables - both population and GDP per capita have high outliers that generate a heavy right skew (as detailed above), while GDP growth is contained within a much smaller range. Irrespective of these patterns, all correlations are weak and likely artificial in nature.</em></p>
+</div>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>
