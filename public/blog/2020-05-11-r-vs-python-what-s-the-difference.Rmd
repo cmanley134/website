@@ -1,0 +1,48 @@
+---
+title: 'R vs Python: What''s the difference?'
+author: Carson Manley
+date: '2020-05-11'
+slug: r-vs-python-what-s-the-difference
+categories: []
+tags: []
+description: 'A brief foray into the contrasts between coding in RStudio and Python 3'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+reticulate::use_condaenv("anaconda3", required=TRUE)
+```
+
+*Despite clear differences in syntax and command execution, both R and Python 3 have the ability to excel in performing identical tasks. I'm choosing to demonstrate this using the built-in iris dataset, which contains information on the dimensions of four different species of iris flowers. I'll narrow down the observations to those where the flower's sepal length is longer than the median value and then make a scatterplot demonstrating the relationship between sepal width and petal width for this subset. I'll also color the points by species so we can see if there is any interaction affecting the relationship.*
+
+*In R, we'll need the functions filter() and select() from dplyr, R's data-wrangling package. We'll also need ggplot2 to make the scatterplot. In order to narrow down the data based on the aforementioned criteria, filter() is needed to select only flowers with a sepal length that is larger than the median - these are represented by specific rows within the data frame. Next, select() allows us to include only certain columns in our new dataset. The only ones we need for the plot are sepal width, petal width, and species, so we'll select those and leave the rest out.*
+
+*Our final step is the creation of the plot itself using ggplot(). Our new dataset is piped into ggplot (a unique syntax in its own right) and the sepal width/petal width variables are mapped to the x and y aesthetics, respectively. The finishing touch is a geom_point() layer with the points colored by species - since we filtered out flowers with smaller sepal lengths, only two species (versicolor and virginica) remain. Based on the plot, there is a clear positive relationship between the two widths, and it appears that virginica individuals have larger petal widths for a given sepal width than versicolor individuals.*
+
+```{R}
+library(tidyverse)
+library(ggplot2)
+data(iris)
+
+dat <- iris %>% filter(Sepal.Length>median(Sepal.Length)) %>% select(Sepal.Width, Petal.Width, Species)
+dat %>% ggplot(aes(x=Sepal.Width, y=Petal.Width)) +
+  geom_point(aes(color=Species)) 
+```
+
+*We can obtain a nearly identical plot in Python 3 using different functions and a slightly modified syntax. Pandas is the python 3 analog of R's dplyr, and seaborn is Python's plotting package. Within pandas, query() performs the same function as filter() in R by selecting rows that meet a certain criteria. In addition, filter() has a different meaning in python 3; it now performs the same duties as select() by pulling certain columns from the data frame.*
+
+*Other differences are evident within the syntax - this code is formatted to imitate the "pipe" structure from R, but such an approach is decidedly unconventional. Disparities such as the periods before function names and the varied use of brackets make it clear that we are looking at a Python code chunk. With respect to the execution, another difference is in the calculation of the median for sepal length. This must be done outside of query() to avoid any potential errors. Finally, seaborn's scatterplot function operates differently than ggplot(), accepting x and y values (as well as a "hue" parameter) without mapping to an aesthetic. It also does not require an additional layer to form the scatterplot, with the graph type being specified by the function itself.*
+
+```{python}
+import pandas as pd
+import seaborn as sns
+
+iris = sns.load_dataset('iris')
+iris.loc[:,'sepal_length'].median() #Returns a median of 5.8
+
+dat=(iris.query('sepal_length>5.8')).filter(['petal_width', 'sepal_width', 'species'])
+sns.scatterplot(data=dat, x='sepal_width', y='petal_width', hue='species')
+```
+
+*Based on this and many other examples, there are multiple equally valid ways to reach the same result using R and Python. Which one you choose can depend on familiarity, accessibility, and/or suitabilility to the task at hand. The best way to know is to give both a try and see where it takes you!*

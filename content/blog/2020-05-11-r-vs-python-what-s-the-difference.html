@@ -1,0 +1,43 @@
+---
+title: 'R vs Python: What''s the difference?'
+author: Carson Manley
+date: '2020-05-11'
+slug: r-vs-python-what-s-the-difference
+categories: []
+tags: []
+description: 'A brief foray into the contrasts between coding in RStudio and Python 3'
+---
+
+
+
+<p><em>Despite clear differences in syntax and command execution, both R and Python 3 have the ability to excel in performing identical tasks. I’m choosing to demonstrate this using the built-in iris dataset, which contains information on the dimensions of four different species of iris flowers. I’ll narrow down the observations to those where the flower’s sepal length is longer than the median value and then make a scatterplot demonstrating the relationship between sepal width and petal width for this subset. I’ll also color the points by species so we can see if there is any interaction affecting the relationship.</em></p>
+<p><em>In R, we’ll need the functions filter() and select() from dplyr, R’s data-wrangling package. We’ll also need ggplot2 to make the scatterplot. In order to narrow down the data based on the aforementioned criteria, filter() is needed to select only flowers with a sepal length that is larger than the median - these are represented by specific rows within the data frame. Next, select() allows us to include only certain columns in our new dataset. The only ones we need for the plot are sepal width, petal width, and species, so we’ll select those and leave the rest out.</em></p>
+<p><em>Our final step is the creation of the plot itself using ggplot(). Our new dataset is piped into ggplot (a unique syntax in its own right) and the sepal width/petal width variables are mapped to the x and y aesthetics, respectively. The finishing touch is a geom_point() layer with the points colored by species - since we filtered out flowers with smaller sepal lengths, only two species (versicolor and virginica) remain. Based on the plot, there is a clear positive relationship between the two widths, and it appears that virginica individuals have larger petal widths for a given sepal width than versicolor individuals.</em></p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
+## ✓ tibble  2.1.3     ✓ dplyr   0.8.3
+## ✓ tidyr   1.0.2     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(ggplot2)
+data(iris)
+
+dat &lt;- iris %&gt;% filter(Sepal.Length&gt;median(Sepal.Length)) %&gt;% select(Sepal.Width, Petal.Width, Species)
+dat %&gt;% ggplot(aes(x=Sepal.Width, y=Petal.Width)) +
+  geom_point(aes(color=Species)) </code></pre>
+<p><img src="/blog/2020-05-11-r-vs-python-what-s-the-difference_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p><em>We can obtain a nearly identical plot in Python 3 using different functions and a slightly modified syntax. Pandas is the python 3 analog of R’s dplyr, and seaborn is Python’s plotting package. Within pandas, query() performs the same function as filter() in R by selecting rows that meet a certain criteria. In addition, filter() has a different meaning in python 3; it now performs the same duties as select() by pulling certain columns from the data frame.</em></p>
+<p><em>Other differences are evident within the syntax - this code is formatted to imitate the “pipe” structure from R, but such an approach is decidedly unconventional. Disparities such as the periods before function names and the varied use of brackets make it clear that we are looking at a Python code chunk. With respect to the execution, another difference is in the calculation of the median for sepal length. This must be done outside of query() to avoid any potential errors. Finally, seaborn’s scatterplot function operates differently than ggplot(), accepting x and y values (as well as a “hue” parameter) without mapping to an aesthetic. It also does not require an additional layer to form the scatterplot, with the graph type being specified by the function itself.</em></p>
+<pre class="python"><code>import pandas as pd
+import seaborn as sns
+
+iris = sns.load_dataset(&#39;iris&#39;)
+iris.loc[:,&#39;sepal_length&#39;].median() #Returns a median of 5.8</code></pre>
+<pre><code>## 5.8</code></pre>
+<pre class="python"><code>dat=(iris.query(&#39;sepal_length&gt;5.8&#39;)).filter([&#39;petal_width&#39;, &#39;sepal_width&#39;, &#39;species&#39;])
+sns.scatterplot(data=dat, x=&#39;sepal_width&#39;, y=&#39;petal_width&#39;, hue=&#39;species&#39;)</code></pre>
+<p><img src="/blog/2020-05-11-r-vs-python-what-s-the-difference_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><em>Based on this and many other examples, there are multiple equally valid ways to reach the same result using R and Python. Which one you choose can depend on familiarity, accessibility, and/or suitabilility to the task at hand. The best way to know is to give both a try and see where it takes you!</em></p>
